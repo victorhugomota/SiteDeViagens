@@ -187,30 +187,37 @@ export const MapRoute: React.FC<MapRouteProps> = ({
       {/* Cards de Recomendações */}
       {filteredPlaces.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-          {filteredPlaces.slice(0, 5).map(place => (
-            <div
-              key={place.id}
-              className="p-2.5 rounded-xl border text-xs flex flex-col justify-between space-y-1.5"
-              style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}
-            >
-              <div>
-                <span className="font-semibold block truncate" style={{ color: 'var(--text-primary)' }} title={place.name}>
-                  {place.name}
-                </span>
-                <span className="flex items-center gap-1 text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  <MapPin className="w-3 h-3 shrink-0" style={{ color: 'var(--accent)' }} /> {place.distance}
-                </span>
-              </div>
-              <div className="flex items-center justify-between pt-1 border-t" style={{ borderColor: 'var(--border-primary)' }}>
-                <span className="text-[10px] capitalize" style={{ color: 'var(--text-muted)' }}>
-                  {place.category === 'restaurant' ? 'Restaurante' : place.category === 'cafe' ? 'Café' : place.category === 'hotel' ? 'Hospedagem' : 'Atração'}
-                </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center gap-0.5 shrink-0 bg-amber-950 text-amber-400 border border-amber-800">
-                  <Star className="w-2.5 h-2.5 fill-amber-400" /> {place.rating}
-                </span>
-              </div>
-            </div>
-          ))}
+          {filteredPlaces.slice(0, 5).map(place => {
+            const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(place.name + ' ' + place.address)}`;
+            return (
+              <a
+                key={place.id}
+                href={googleUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Buscar "${place.name}" no Google`}
+                className="p-2.5 rounded-xl border text-xs flex flex-col justify-between space-y-1.5 transition-all duration-200 hover:border-cyan-400 hover:scale-[1.02] hover:shadow-lg cursor-pointer group"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}
+              >
+                <div>
+                  <span className="font-semibold block truncate group-hover:text-cyan-300 transition-colors" style={{ color: 'var(--text-primary)' }}>
+                    {place.name} ↗
+                  </span>
+                  <span className="flex items-center gap-1 text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    <MapPin className="w-3 h-3 shrink-0" style={{ color: 'var(--accent)' }} /> {place.distance}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t" style={{ borderColor: 'var(--border-primary)' }}>
+                  <span className="text-[10px] capitalize" style={{ color: 'var(--text-muted)' }}>
+                    {place.category === 'restaurant' ? 'Restaurante' : place.category === 'cafe' ? 'Café' : place.category === 'hotel' ? 'Hospedagem' : 'Atração'}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold flex items-center gap-0.5 shrink-0 bg-amber-950 text-amber-400 border border-amber-800">
+                    <Star className="w-2.5 h-2.5 fill-amber-400" /> {place.rating}
+                  </span>
+                </div>
+              </a>
+            );
+          })}
         </div>
       )}
     </div>
