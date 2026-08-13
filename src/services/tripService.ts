@@ -10,7 +10,7 @@ import {
   orderBy
 } from "firebase/firestore";
 import { db } from "../firebase/config";
-import type { Trip, TripFormData, ExpenseItem } from "../types/trip";
+import type { Trip, TripFormData, ExpenseItem, TripMemory } from "../types/trip";
 
 const COLLECTION_NAME = "trips";
 
@@ -20,11 +20,11 @@ const COLLECTION_NAME = "trips";
 export function calculateTotalEstimateCost(tripData: Partial<TripFormData>): number {
   const hospedagem = tripData.accommodation?.totalCost || 0;
   const aluguelCarro = tripData.carRental?.enabled ? (tripData.carRental?.totalCost || 0) : 0;
-  const combustível = tripData.transport?.calculatedFuelCost || 0;
-  const pedágio = tripData.transport?.tollCost || 0;
+  const combustivel = tripData.transport?.calculatedFuelCost || 0;
+  const pedagio = tripData.transport?.tollCost || 0;
   const extras = (tripData.extraItems || []).reduce((acc, item) => acc + (item.value || 0), 0);
 
-  return Math.round((hospedagem + aluguelCarro + combustível + pedágio + extras) * 100) / 100;
+  return Math.round((hospedagem + aluguelCarro + combustivel + pedagio + extras) * 100) / 100;
 }
 
 /**
@@ -77,6 +77,7 @@ export async function createTrip(formData: TripFormData): Promise<string> {
   const newTripPayload = {
     ...formData,
     totalEstimateCost,
+    memories: [],
     createdAt: now,
     updatedAt: now
   };
@@ -119,30 +120,17 @@ export async function addExpenseItemToTrip(trip: Trip, newItem: Omit<ExpenseItem
 
   const updatedExtraItems = [...(trip.extraItems || []), itemWithId];
   
-  const updatedTripData: TripFormData = {
-    title: trip.title,
-    originAddress: trip.originAddress,
-    destinationAddress: trip.destinationAddress,
-    destinationLat: trip.destinationLat,
-    destinationLng: trip.destinationLng,
-    startDate: trip.startDate,
-    endDate: trip.endDate,
-    accommodation: trip.accommodation,
-    transport: trip.transport,
-    carRental: trip.carRental,
+  const docRef = doc(db, COLLECTION_NAME, trip.id);
+  await updateDoc(docRef, {
     extraItems: updatedExtraItems,
-    notes: trip.notes,
-    coverImageUrl: trip.coverImageUrl,
-    status: trip.status,
     totalEstimateCost: calculateTotalEstimateCost({
       accommodation: trip.accommodation,
       transport: trip.transport,
       carRental: trip.carRental,
       extraItems: updatedExtraItems
-    })
-  };
-
-  await updateTrip(trip.id, updatedTripData);
+    }),
+    updatedAt: new Date().toISOString()
+  });
 }
 
 /**
@@ -151,28 +139,47 @@ export async function addExpenseItemToTrip(trip: Trip, newItem: Omit<ExpenseItem
 export async function removeExpenseItemFromTrip(trip: Trip, itemId: string): Promise<void> {
   const updatedExtraItems = (trip.extraItems || []).filter(item => item.id !== itemId);
   
-  const updatedTripData: TripFormData = {
-    title: trip.title,
-    originAddress: trip.originAddress,
-    destinationAddress: trip.destinationAddress,
-    destinationLat: trip.destinationLat,
-    destinationLng: trip.destinationLng,
-    startDate: trip.startDate,
-    endDate: trip.endDate,
-    accommodation: trip.accommodation,
-    transport: trip.transport,
-    carRental: trip.carRental,
+  const docRef = doc(db, COLLECTION_NAME, trip.id);
+  await updateDoc(docRef, {
     extraItems: updatedExtraItems,
-    notes: trip.notes,
-    coverImageUrl: trip.coverImageUrl,
-    status: trip.status,
     totalEstimateCost: calculateTotalEstimateCost({
       accommodation: trip.accommodation,
       transport: trip.transport,
       carRental: trip.carRental,
       extraItems: updatedExtraItems
-    })
+    }),
+    updatedAt: new Date().toISOString()
+  });
+}
+
+/**
+ * Adiciona uma lembrança (foto) à viagem
+ */
+export async function addMemoryToTrip(trip: Trip, memory: Omit<TripMemory, 'id' | 'addedAt'>): Promise<void> {
+  const newMemory: TripMemory = {
+    ...memory,
+    id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+    addedAt: new Date().toISOString()
   };
 
-  await updateTrip(trip.id, updatedTripData);
+  const updatedMemories = [...(trip.memories || []), newMemory];
+  
+  const docRef = doc(db, COLLECTION_NAME, trip.id);
+  await updateDoc(docRef, {
+    memories: updatedMemories,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+/**
+ * Remove uma lembrança da viagem
+ */
+export async function removeMemoryFromTrip(trip: Trip, memoryId: string): Promise<void> {
+  const updatedMemories = (trip.memories || []).filter(m => m.id !== memoryId);
+  
+  const docRef = doc(db, COLLECTION_NAME, trip.id);
+  await updateDoc(docRef, {
+    memories: updatedMemories,
+    updatedAt: new Date().toISOString()
+  });
 }

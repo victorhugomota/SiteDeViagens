@@ -16,10 +16,12 @@ export interface RouteCalculationResult {
   destLat: number;
   destLng: number;
   durationMinutes?: number;
+  routePolyline?: [number, number][]; // Pontos reais da estrada (OSRM)
 }
 
 export interface PlaceAutocompleteOption {
   display_name: string;
+  display_name_short: string; // Nome curto para o campo de input
   city: string;
   state: string;
   lat: number;
@@ -36,7 +38,6 @@ export function calculateCarRentalDays(startDateStr: string, endDateStr: string)
     return { daysCount: 1, hasSundayExtraDay: false };
   }
 
-  // Converter YYYY-MM-DD para objeto Date local (com fuso zerado)
   const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
   const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
 
@@ -54,10 +55,7 @@ export function calculateCarRentalDays(startDateStr: string, endDateStr: string)
   const hasSundayExtraDay = isStartSunday || isEndSunday;
   const daysCount = hasSundayExtraDay ? baseDays + 1 : baseDays;
 
-  return {
-    daysCount,
-    hasSundayExtraDay
-  };
+  return { daysCount, hasSundayExtraDay };
 }
 
 /**
@@ -73,13 +71,14 @@ export function calculateCarRentalTotal(carRental: Partial<CarRentalInfo>): numb
 }
 
 /**
- * Busca sugestões de autocompletar ao digitar o local de destino
+ * Busca sugestões de autocompletar ao digitar o local de destino.
+ * Retorna o display_name COMPLETO do Nominatim para melhor clareza.
  */
 export async function searchDestinationAutocomplete(query: string): Promise<PlaceAutocompleteOption[]> {
   if (!query || query.trim().length < 2) return [];
 
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=br&limit=5&addressdetails=1`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
     const res = await fetch(url, {
       headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
     });
@@ -88,10 +87,25 @@ export async function searchDestinationAutocomplete(query: string): Promise<Plac
 
     const data = await res.json();
     return data.map((item: any) => {
-      const city = item.address?.city || item.address?.town || item.address?.municipality || item.display_name.split(',')[0];
-      const state = item.address?.state || '';
+      const addr = item.address || {};
+      const road = addr.road || addr.pedestrian || addr.path || '';
+      const suburb = addr.suburb || addr.neighbourhood || addr.quarter || '';
+      const city = addr.city || addr.town || addr.municipality || addr.village || addr.county || '';
+      const state = addr.state || '';
+      const postcode = addr.postcode || '';
+      const country = addr.country || 'Brasil';
+
+      // Nome curto: Rua, Bairro - Cidade/Estado
+      const parts = [road, suburb, city].filter(Boolean);
+      const shortName = parts.length > 0 ? parts.join(', ') + (state ? ' - ' + state : '') : item.display_name.split(',').slice(0, 3).join(',');
+
+      // Nome completo: tudo disponível
+      const fullParts = [road, suburb, city, state, postcode, country].filter(Boolean);
+      const fullName = fullParts.length > 0 ? fullParts.join(', ') : item.display_name;
+
       return {
-        display_name: `${city}${state ? ' - ' + state : ''}, Brasil`,
+        display_name: fullName,
+        display_name_short: shortName,
         city,
         state,
         lat: parseFloat(item.lat),
@@ -124,7 +138,7 @@ function haversineDistance(
 }
 
 /**
- * Estima o custo de pedágios
+ * Estima o custo de pedágios (ida e volta)
  */
 export function estimateTollCost(distanceKm: number, isRoundTrip: boolean = true): number {
   const totalKm = isRoundTrip ? distanceKm * 2 : distanceKm;
@@ -136,7 +150,7 @@ export function estimateTollCost(distanceKm: number, isRoundTrip: boolean = true
 }
 
 /**
- * Calcula o custo total de combustível
+ * Calcula o custo total de combustível (sempre ida e volta)
  */
 export function calculateFuelCost(
   distanceKm: number,
@@ -151,7 +165,31 @@ export function calculateFuelCost(
 }
 
 /**
- * Calcula distância e rota
+ * Busca a polyline real da rota via OSRM (geometrias reais das estradas)
+ */
+export async function fetchRealRoutePolyline(
+  originLat: number,
+  originLng: number,
+  destLat: number,
+  destLng: number
+): Promise<[number, number][] | null> {
+  try {
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson`;
+    const res = await fetch(osrmUrl);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.routes && data.routes.length > 0 && data.routes[0].geometry?.coordinates) {
+      // GeoJSON retorna [lng, lat], Leaflet precisa [lat, lng]
+      return data.routes[0].geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Calcula distância e rota completa, incluindo polyline real
  */
 export async function calculateRouteDetails(
   destinationQuery: string,
@@ -161,8 +199,9 @@ export async function calculateRouteDetails(
 ): Promise<RouteCalculationResult> {
   let distanceKm = 150;
   let destinationCityState = destinationQuery;
-  let destLat = -27.5954; // Coordenada padrão (Florianópolis / SP)
+  let destLat = -27.5954;
   let destLng = -48.5480;
+  let routePolyline: [number, number][] | undefined;
 
   try {
     const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destinationQuery)}&limit=1`;
@@ -178,12 +217,19 @@ export async function calculateRouteDetails(
         destinationCityState = geoData[0].display_name.split(',').slice(0, 3).join(',');
 
         try {
-          const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${DEFAULT_ORIGIN_COORDS.lng},${DEFAULT_ORIGIN_COORDS.lat};${destLng},${destLat}?overview=false`;
+          // Buscar distância E polyline real via OSRM
+          const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${DEFAULT_ORIGIN_COORDS.lng},${DEFAULT_ORIGIN_COORDS.lat};${destLng},${destLat}?overview=full&geometries=geojson`;
           const osrmRes = await fetch(osrmUrl);
           if (osrmRes.ok) {
             const osrmData = await osrmRes.json();
             if (osrmData.routes && osrmData.routes.length > 0) {
               distanceKm = Math.round(osrmData.routes[0].distance / 1000);
+              // Extrair polyline real
+              if (osrmData.routes[0].geometry?.coordinates) {
+                routePolyline = osrmData.routes[0].geometry.coordinates.map(
+                  ([lng, lat]: [number, number]) => [lat, lng] as [number, number]
+                );
+              }
             } else {
               distanceKm = haversineDistance(DEFAULT_ORIGIN_COORDS.lat, DEFAULT_ORIGIN_COORDS.lng, destLat, destLng);
             }
@@ -212,7 +258,8 @@ export async function calculateRouteDetails(
     calculatedFuelCost,
     destinationCityState,
     destLat,
-    destLng
+    destLng,
+    routePolyline
   };
 }
 
