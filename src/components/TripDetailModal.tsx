@@ -225,23 +225,20 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Abrir link da hospedagem"
-                  className="rounded-xl border px-3.5 py-2.5 flex items-center justify-between transition-all duration-200 cursor-pointer group hover:border-cyan-400 hover:shadow-md active:scale-98"
+                  className="rounded-xl border px-3.5 py-2.5 flex items-center transition-all duration-200 cursor-pointer group hover:border-cyan-400 hover:shadow-md active:scale-98"
                   style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <ExternalLink className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform shrink-0" />
                     <div className="min-w-0">
                       <span className="text-xs font-bold text-cyan-300 block group-hover:text-cyan-200 transition-colors">
-                        Ver Hospedagem ↗
+                        Ver Hospedagem
                       </span>
                       <span className="text-[10px] block truncate text-slate-400 mt-0.5">
                         {trip.accommodation.url}
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2">
-                    Abrir ↗
-                  </span>
                 </a>
               )}
 
