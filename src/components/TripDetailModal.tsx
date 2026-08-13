@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, MapPin, Calendar, Hotel, Fuel, Ticket, Plus, Trash2, Navigation, Edit3, CheckCircle2 } from 'lucide-react';
+import { X, MapPin, Calendar, Hotel, Fuel, Ticket, Plus, Trash2, Navigation, Edit3, CheckCircle2, Car } from 'lucide-react';
 import type { Trip } from '../types/trip';
 import { formatCurrency, formatDate, calculateNights, getDestinationImageUrl } from '../utils/formatters';
+import { MapRoute } from './MapRoute';
 
 interface TripDetailModalProps {
   trip: Trip | null;
@@ -110,8 +111,15 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
             </div>
           </div>
 
+          {/* Mapa Interativo e Recomendações */}
+          <MapRoute
+            destinationName={trip.destinationAddress}
+            destLat={trip.destinationLat}
+            destLng={trip.destinationLng}
+          />
+
           {/* Decomposição de Custos */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             
             {/* Hospedagem */}
             <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
@@ -122,7 +130,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                 {formatCurrency(trip.accommodation?.totalCost || 0)}
               </p>
               <span className="text-[10px] text-slate-400 mt-1 block">
-                {trip.accommodation?.name || 'Local'} ({nights}x {formatCurrency(trip.accommodation?.pricePerNight || 0)})
+                {nights}x {formatCurrency(trip.accommodation?.pricePerNight || 0)}
               </span>
             </div>
 
@@ -135,7 +143,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                 {formatCurrency(trip.transport?.calculatedFuelCost || 0)}
               </p>
               <span className="text-[10px] text-slate-400 mt-1 block">
-                {trip.transport?.distanceKm || 0} km (Ida) • {trip.transport?.fuelEfficiencyKmL || 10} km/L @ {formatCurrency(trip.transport?.fuelPricePerLiter || 0)}/L
+                {trip.transport?.distanceKm || 0} km (Ida)
               </span>
             </div>
 
@@ -148,7 +156,20 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                 {formatCurrency(trip.transport?.tollCost || 0)}
               </p>
               <span className="text-[10px] text-slate-400 mt-1 block">
-                Estimado pela rota calculada
+                Estimativa da rota
+              </span>
+            </div>
+
+            {/* Aluguel de Carro */}
+            <div className="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
+              <span className="text-slate-400 flex items-center gap-1.5 font-semibold">
+                <Car className="w-4 h-4 text-blue-400" /> Carro Alugado
+              </span>
+              <p className="text-sm font-bold text-white mt-1">
+                {trip.carRental?.enabled ? formatCurrency(trip.carRental.totalCost) : 'Não incluído'}
+              </p>
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                {trip.carRental?.enabled ? `${trip.carRental.daysCount} diárias` : '—'}
               </span>
             </div>
 
@@ -169,7 +190,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
             <form onSubmit={handleAddItem} className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
-                placeholder="Ex: Passeio de barco, Jantar especial..."
+                placeholder="Ex: Passeio, Ingressos..."
                 value={newDesc}
                 onChange={(e) => setNewDesc(e.target.value)}
                 className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-100 outline-none"
@@ -215,7 +236,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
               </div>
             ) : (
               <p className="text-xs text-slate-500 italic py-2">
-                Nenhum item extra adicionado. Use o formulário acima para adicionar atrações ou passeios (ex: "Passeio de barco" - R$ 50,00).
+                Nenhum item extra adicionado.
               </p>
             )}
           </div>

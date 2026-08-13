@@ -15,15 +15,16 @@ import type { Trip, TripFormData, ExpenseItem } from "../types/trip";
 const COLLECTION_NAME = "trips";
 
 /**
- * Calcula o custo total da viagem somando hospedagem, combustível, pedágio e itens extras
+ * Calcula o custo total da viagem somando hospedagem, aluguel de carro, combustível, pedágio e itens extras
  */
 export function calculateTotalEstimateCost(tripData: Partial<TripFormData>): number {
   const hospedagem = tripData.accommodation?.totalCost || 0;
+  const aluguelCarro = tripData.carRental?.enabled ? (tripData.carRental?.totalCost || 0) : 0;
   const combustível = tripData.transport?.calculatedFuelCost || 0;
   const pedágio = tripData.transport?.tollCost || 0;
   const extras = (tripData.extraItems || []).reduce((acc, item) => acc + (item.value || 0), 0);
 
-  return Math.round((hospedagem + combustível + pedágio + extras) * 100) / 100;
+  return Math.round((hospedagem + aluguelCarro + combustível + pedágio + extras) * 100) / 100;
 }
 
 /**
@@ -122,12 +123,13 @@ export async function addExpenseItemToTrip(trip: Trip, newItem: Omit<ExpenseItem
     title: trip.title,
     originAddress: trip.originAddress,
     destinationAddress: trip.destinationAddress,
-    destinationCity: trip.destinationCity,
-    destinationState: trip.destinationState,
+    destinationLat: trip.destinationLat,
+    destinationLng: trip.destinationLng,
     startDate: trip.startDate,
     endDate: trip.endDate,
     accommodation: trip.accommodation,
     transport: trip.transport,
+    carRental: trip.carRental,
     extraItems: updatedExtraItems,
     notes: trip.notes,
     coverImageUrl: trip.coverImageUrl,
@@ -135,6 +137,7 @@ export async function addExpenseItemToTrip(trip: Trip, newItem: Omit<ExpenseItem
     totalEstimateCost: calculateTotalEstimateCost({
       accommodation: trip.accommodation,
       transport: trip.transport,
+      carRental: trip.carRental,
       extraItems: updatedExtraItems
     })
   };
@@ -152,12 +155,13 @@ export async function removeExpenseItemFromTrip(trip: Trip, itemId: string): Pro
     title: trip.title,
     originAddress: trip.originAddress,
     destinationAddress: trip.destinationAddress,
-    destinationCity: trip.destinationCity,
-    destinationState: trip.destinationState,
+    destinationLat: trip.destinationLat,
+    destinationLng: trip.destinationLng,
     startDate: trip.startDate,
     endDate: trip.endDate,
     accommodation: trip.accommodation,
     transport: trip.transport,
+    carRental: trip.carRental,
     extraItems: updatedExtraItems,
     notes: trip.notes,
     coverImageUrl: trip.coverImageUrl,
@@ -165,6 +169,7 @@ export async function removeExpenseItemFromTrip(trip: Trip, itemId: string): Pro
     totalEstimateCost: calculateTotalEstimateCost({
       accommodation: trip.accommodation,
       transport: trip.transport,
+      carRental: trip.carRental,
       extraItems: updatedExtraItems
     })
   };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, Hotel, Fuel, Ticket, PlusCircle, Edit3, Trash2, Navigation } from 'lucide-react';
+import { Calendar, MapPin, Hotel, Fuel, Ticket, PlusCircle, Edit3, Trash2, Navigation, Car } from 'lucide-react';
 import type { Trip } from '../types/trip';
 import { formatCurrency, formatDate, calculateNights, getDestinationImageUrl } from '../utils/formatters';
 
@@ -103,20 +103,28 @@ export const TripCard: React.FC<TripCardProps> = ({
             </span>
           </div>
 
-          {/* Pedágio */}
+          {/* Pedágio / Aluguel de Carro */}
           <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
             <span className="text-[11px] text-slate-400 flex items-center gap-1">
-              <Ticket className="w-3.5 h-3.5 text-cyan-400" /> Pedágios
+              {trip.carRental?.enabled ? (
+                <>
+                  <Car className="w-3.5 h-3.5 text-blue-400" /> Carro Alugado
+                </>
+              ) : (
+                <>
+                  <Ticket className="w-3.5 h-3.5 text-cyan-400" /> Pedágios
+                </>
+              )}
             </span>
             <span className="font-semibold text-slate-200 mt-1">
-              {formatCurrency(trip.transport?.tollCost || 0)}
+              {trip.carRental?.enabled ? formatCurrency(trip.carRental.totalCost) : formatCurrency(trip.transport?.tollCost || 0)}
             </span>
           </div>
 
           {/* Gastos Extras */}
           <div className="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800 flex flex-col justify-between">
             <span className="text-[11px] text-slate-400 flex items-center gap-1">
-              <PlusCircle className="w-3.5 h-3.5 text-emerald-400" /> Itens Extras
+              <PlusCircle className="w-3.5 h-3.5 text-emerald-400" /> Extras / Refeições
             </span>
             <span className="font-semibold text-slate-200 mt-1">
               {formatCurrency(extraItemsTotal)}
