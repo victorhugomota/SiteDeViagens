@@ -161,23 +161,31 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
         {/* Corpo */}
         <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
 
-          {/* Origem e Período */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border p-4 text-xs" style={sectionStyle}>
+          {/* Rota (Partida + Destino) e Período */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 rounded-2xl border p-4 text-xs" style={sectionStyle}>
             <div>
               <span className="flex items-center gap-1 font-semibold mb-1.5" style={labelStyle}>
-                <Navigation className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} /> Partida:
+                <Navigation className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} /> Local de Partida:
               </span>
-              <p className="rounded-xl border px-3 py-2" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}>
+              <p className="rounded-xl border px-3 py-2 leading-relaxed" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}>
                 {trip.originAddress}
+              </p>
+            </div>
+            <div>
+              <span className="flex items-center gap-1 font-semibold mb-1.5" style={labelStyle}>
+                <MapPin className="w-3.5 h-3.5 text-rose-400" /> Local de Destino:
+              </span>
+              <p className="rounded-xl border px-3 py-2 leading-relaxed font-medium" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}>
+                {trip.destinationAddress}
               </p>
             </div>
             <div>
               <span className="flex items-center gap-1 font-semibold mb-1.5" style={labelStyle}>
                 <Calendar className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} /> Período:
               </span>
-              <p className="rounded-xl border px-3 py-2 flex justify-between" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}>
+              <p className="rounded-xl border px-3 py-2 flex flex-col justify-center leading-relaxed" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}>
                 <span>{formatDate(trip.startDate)} → {formatDate(trip.endDate)}</span>
-                <span className="font-bold" style={{ color: 'var(--accent)' }}>({nights} noites)</span>
+                <span className="font-bold text-[11px] mt-0.5" style={{ color: 'var(--accent)' }}>{nights} noites</span>
               </p>
             </div>
           </div>
