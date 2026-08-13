@@ -229,6 +229,24 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
     }
   }, [tripToEdit, isOpen]);
 
+  const handleStartDateChange = (newStartDate: string) => {
+    setStartDate(newStartDate);
+    if (newStartDate) {
+      const [sy, sm, sd] = newStartDate.split('-').map(Number);
+      const startObj = new Date(sy, sm - 1, sd);
+      startObj.setDate(startObj.getDate() + 1);
+      
+      const year = startObj.getFullYear();
+      const month = String(startObj.getMonth() + 1).padStart(2, '0');
+      const day = String(startObj.getDate()).padStart(2, '0');
+      const nextDayStr = `${year}-${month}-${day}`;
+
+      if (!endDate || endDate <= newStartDate) {
+        setEndDate(nextDayStr);
+      }
+    }
+  };
+
   const resetForm = () => {
     setTitle('');
     setOriginAddress(DEFAULT_ORIGIN_ADDRESS);
@@ -689,15 +707,28 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1" style={labelStyle}>
                 <Calendar className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} /> Data de Ida
               </label>
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border rounded-xl px-3 py-2 text-sm outline-none" style={inputStyle} required />
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2 text-sm outline-none cursor-pointer"
+                style={inputStyle}
+                required
+              />
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1" style={labelStyle}>
                 <Calendar className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} /> Data de Volta
               </label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border rounded-xl px-3 py-2 text-sm outline-none" style={inputStyle} required />
+              <input
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2 text-sm outline-none cursor-pointer"
+                style={inputStyle}
+                required
+              />
             </div>
             <div className="flex flex-col items-center justify-center rounded-xl border p-2" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}>
               <span className="text-[10px] uppercase font-semibold" style={labelStyle}>Total</span>

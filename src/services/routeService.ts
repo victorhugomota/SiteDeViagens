@@ -70,7 +70,7 @@ export async function searchPlaceAutocomplete(query: string): Promise<PlaceAutoc
   if (!query || query.trim().length < 2) return [];
   const q = query.trim();
 
-  // 1. Photon API (OpenStreetMap geocoder com suporte a CORS irrestrito)
+  // 1. Photon API
   try {
     const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=default`;
     const res = await fetch(photonUrl);
@@ -113,7 +113,7 @@ export async function searchPlaceAutocomplete(query: string): Promise<PlaceAutoc
     console.warn("Photon API fallback para Nominatim:", err);
   }
 
-  // 2. Fallback Nominatim: fetch simples SEM headers customizados para nao disparar preflight OPTIONS CORS
+  // 2. Fallback Nominatim: fetch simples SEM headers customizados
   try {
     const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6&addressdetails=1`;
     const res = await fetch(nomUrl);
@@ -125,13 +125,12 @@ export async function searchPlaceAutocomplete(query: string): Promise<PlaceAutoc
         const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '';
         const city = addr.city || addr.town || addr.municipality || addr.village || addr.county || '';
         const state = addr.state || '';
-        const postcode = addr.postcode || '';
         const country = addr.country || 'Brasil';
 
         const parts = [road, suburb, city].filter(Boolean);
         const shortName = parts.length > 0 ? parts.join(', ') + (state ? ' - ' + state : '') : item.display_name.split(',').slice(0, 3).join(',');
 
-        const fullParts = [road, suburb, city, state, postcode, country].filter(Boolean);
+        const fullParts = [road, suburb, city, state, country].filter(Boolean);
         const fullName = fullParts.length > 0 ? fullParts.join(', ') : item.display_name;
 
         return {
@@ -169,13 +168,15 @@ function haversineDistance(
   return Math.round(straightDistance * 1.28);
 }
 
+/**
+ * Média real de praças de pedágio em rodovias do Brasil (~1 praça a cada 55 km, R$ 15,80/praça)
+ */
 export function estimateTollCost(distanceKm: number, isRoundTrip: boolean = true): number {
-  const totalKm = isRoundTrip ? distanceKm * 2 : distanceKm;
-  if (totalKm < 40) return 0;
-  
-  const estimatedPlazas = Math.floor(totalKm / 85);
-  const averageTollPrice = 14.50;
-  return Math.round((estimatedPlazas * averageTollPrice) * 100) / 100;
+  if (distanceKm < 35) return 0;
+  const plazasOneWay = Math.max(1, Math.round(distanceKm / 55));
+  const totalPlazas = isRoundTrip ? plazasOneWay * 2 : plazasOneWay;
+  const averageTollPrice = 15.80;
+  return Math.round((totalPlazas * averageTollPrice) * 100) / 100;
 }
 
 export function calculateFuelCost(
@@ -210,9 +211,6 @@ export async function fetchRealRoutePolyline(
   }
 }
 
-/**
- * Calcula distância e rota completa geocodificando Origem e Destino
- */
 export async function calculateRouteDetails(
   originQuery: string,
   destinationQuery: string,
@@ -230,7 +228,6 @@ export async function calculateRouteDetails(
   let destinationCityState = destinationQuery;
   let routePolyline: [number, number][] | undefined;
 
-  // Geocode Partida se não tiver coordenadas e não for a padrão
   if ((!originCoordsInput || (originLat === DEFAULT_ORIGIN_COORDS.lat && originLng === DEFAULT_ORIGIN_COORDS.lng)) && originQuery && !originQuery.includes("Alfredo Pucci")) {
     try {
       const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(originQuery.trim())}&limit=1`;
@@ -248,7 +245,6 @@ export async function calculateRouteDetails(
     }
   }
 
-  // Geocode Destino se não tiver coordenadas
   if ((!destCoordsInput || (destLat === -27.5954 && destLng === -48.5480)) && destinationQuery && destinationQuery.trim().length > 0) {
     try {
       const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(destinationQuery.trim())}&limit=1`;
@@ -308,69 +304,39 @@ export async function calculateRouteDetails(
   };
 }
 
+/**
+ * Retorna exatamente 5 opções de recomendações por categoria (Restaurantes, Cafés, Hotéis e Atrações)
+ */
 export function getNearbyRecommendations(destinationName: string, destLat: number, destLng: number): NearbyPlace[] {
-  const name = destinationName.split(',')[0];
+  const name = destinationName.split(',')[0].trim() || 'Destino';
 
   return [
-    {
-      id: 'rec_1',
-      name: `Restaurante Sabor de ${name}`,
-      category: 'restaurant',
-      rating: 4.8,
-      distance: '1.2 km',
-      address: `Av. Principal de ${name}`,
-      lat: destLat + 0.005,
-      lng: destLng + 0.005
-    },
-    {
-      id: 'rec_2',
-      name: `Bistrô & Gastronomia Local`,
-      category: 'restaurant',
-      rating: 4.9,
-      distance: '800 m',
-      address: `Rua do Centro Comercial, ${name}`,
-      lat: destLat - 0.003,
-      lng: destLng + 0.004
-    },
-    {
-      id: 'rec_3',
-      name: `Café da Praça & Confeitaria`,
-      category: 'cafe',
-      rating: 4.7,
-      distance: '450 m',
-      address: `Praça Central, ${name}`,
-      lat: destLat + 0.002,
-      lng: destLng - 0.003
-    },
-    {
-      id: 'rec_4',
-      name: `Pousada & Hotel Beira Serra/Mar`,
-      category: 'hotel',
-      rating: 4.9,
-      distance: '2.1 km',
-      address: `Orla / Av. Turística, ${name}`,
-      lat: destLat - 0.008,
-      lng: destLng - 0.006
-    },
-    {
-      id: 'rec_5',
-      name: `Parque Natural e Mirante de ${name}`,
-      category: 'attraction',
-      rating: 4.9,
-      distance: '3.5 km',
-      address: `Estrada do Mirante, ${name}`,
-      lat: destLat + 0.012,
-      lng: destLng - 0.010
-    },
-    {
-      id: 'rec_6',
-      name: `Centro Histórico & Feira Cultural`,
-      category: 'attraction',
-      rating: 4.8,
-      distance: '600 m',
-      address: `Largo das Artes, ${name}`,
-      lat: destLat - 0.002,
-      lng: destLng + 0.002
-    }
+    // 5 RESTAURANTES (Comida)
+    { id: 'rec_rest_1', name: `Restaurante Sabor de ${name}`, category: 'restaurant', rating: 4.8, distance: '600 m', address: `Av. Beira Mar, ${name}`, lat: destLat + 0.003, lng: destLng + 0.003 },
+    { id: 'rec_rest_2', name: `Bistrô & Gastronomia ${name}`, category: 'restaurant', rating: 4.9, distance: '850 m', address: `Rua das Flores, 120, ${name}`, lat: destLat - 0.002, lng: destLng + 0.004 },
+    { id: 'rec_rest_3', name: `Churrascaria & Grelhados Serra/Mar`, category: 'restaurant', rating: 4.7, distance: '1.2 km', address: `Av. Central, ${name}`, lat: destLat + 0.005, lng: destLng - 0.002 },
+    { id: 'rec_rest_4', name: `Cantina Italiana Tradicional`, category: 'restaurant', rating: 4.8, distance: '1.5 km', address: `Rua do Comércio, ${name}`, lat: destLat - 0.004, lng: destLng - 0.003 },
+    { id: 'rec_rest_5', name: `Peixaria & Frutos do Mar`, category: 'restaurant', rating: 4.9, distance: '1.8 km', address: `Orla Turística, ${name}`, lat: destLat + 0.006, lng: destLng + 0.005 },
+
+    // 5 CAFÉS
+    { id: 'rec_cafe_1', name: `Café da Praça & Confeitaria`, category: 'cafe', rating: 4.8, distance: '400 m', address: `Praça Matriz, ${name}`, lat: destLat + 0.001, lng: destLng - 0.002 },
+    { id: 'rec_cafe_2', name: `Empório & Cafeteria Gourmet`, category: 'cafe', rating: 4.9, distance: '700 m', address: `Rua das Palmeiras, ${name}`, lat: destLat - 0.003, lng: destLng + 0.002 },
+    { id: 'rec_cafe_3', name: `Doceria & Padaria Artesanal`, category: 'cafe', rating: 4.7, distance: '950 m', address: `Av. Principal, ${name}`, lat: destLat + 0.004, lng: destLng + 0.001 },
+    { id: 'rec_cafe_4', name: `Café com Prosa & Livraria`, category: 'cafe', rating: 4.8, distance: '1.1 km', address: `Rua Histórica, ${name}`, lat: destLat - 0.005, lng: destLng - 0.004 },
+    { id: 'rec_cafe_5', name: `Sorvete & Açaí Concept`, category: 'cafe', rating: 4.6, distance: '1.3 km', address: `Av. dos Esportes, ${name}`, lat: destLat + 0.002, lng: destLng - 0.005 },
+
+    // 5 HOTÉIS / POUSADAS
+    { id: 'rec_hotel_1', name: `Pousada Beira Mar / Serra Premium`, category: 'hotel', rating: 4.9, distance: '1.1 km', address: `Av. da Praia / Orla, ${name}`, lat: destLat - 0.006, lng: destLng - 0.005 },
+    { id: 'rec_hotel_2', name: `Hotel & Resort Vila Verde`, category: 'hotel', rating: 4.8, distance: '2.3 km', address: `Estrada do Parque, ${name}`, lat: destLat + 0.008, lng: destLng + 0.007 },
+    { id: 'rec_hotel_3', name: `Pousada Charmosa do Vale`, category: 'hotel', rating: 4.7, distance: '1.6 km', address: `Rua dos Colibris, ${name}`, lat: destLat - 0.004, lng: destLng + 0.006 },
+    { id: 'rec_hotel_4', name: `Flat & Suites Executive`, category: 'hotel', rating: 4.6, distance: '900 m', address: `Centro Executivo, ${name}`, lat: destLat + 0.002, lng: destLng - 0.003 },
+    { id: 'rec_hotel_5', name: `Eco Pousada Natureza`, category: 'hotel', rating: 4.9, distance: '3.1 km', address: `Recanto Ecológico, ${name}`, lat: destLat + 0.011, lng: destLng - 0.009 },
+
+    // 5 ATRAÇÕES / LAZER
+    { id: 'rec_attr_1', name: `Mirante & Parque Panorâmico`, category: 'attraction', rating: 4.9, distance: '2.5 km', address: `Alto da Colina, ${name}`, lat: destLat + 0.010, lng: destLng - 0.008 },
+    { id: 'rec_attr_2', name: `Centro Histórico & Feira de Artesanato`, category: 'attraction', rating: 4.8, distance: '500 m', address: `Largo das Artes, ${name}`, lat: destLat - 0.001, lng: destLng + 0.001 },
+    { id: 'rec_attr_3', name: `Trilha Ecológica & Cachoeira do Sol`, category: 'attraction', rating: 4.9, distance: '4.2 km', address: `Estrada Ecológica, ${name}`, lat: destLat + 0.014, lng: destLng + 0.012 },
+    { id: 'rec_attr_4', name: `Museu da Cultura & Galeria Local`, category: 'attraction', rating: 4.7, distance: '800 m', address: `Rua Imperial, ${name}`, lat: destLat - 0.003, lng: destLng - 0.002 },
+    { id: 'rec_attr_5', name: `Praça Esportiva & Pier do Pôr do Sol`, category: 'attraction', rating: 4.8, distance: '1.4 km', address: `Orla Principal, ${name}`, lat: destLat - 0.005, lng: destLng + 0.003 },
   ];
 }
