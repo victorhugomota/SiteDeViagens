@@ -420,6 +420,8 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
       const formData: TripFormData = {
         title: title.trim() || `Viagem para ${destinationAddress}`,
         originAddress,
+        originLat,
+        originLng,
         destinationAddress,
         destinationLat: destLat,
         destinationLng: destLng,

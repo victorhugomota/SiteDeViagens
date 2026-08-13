@@ -67,6 +67,8 @@ export interface Trip {
   id: string;
   title: string;
   originAddress: string;
+  originLat?: number;
+  originLng?: number;
   destinationAddress: string;
   destinationLat?: number;
   destinationLng?: number;
