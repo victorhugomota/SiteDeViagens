@@ -140,6 +140,23 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   const coverInputRef = useRef<HTMLInputElement>(null);
   const accomPhotosInputRef = useRef<HTMLInputElement>(null);
 
+  // Suporte a comando voltar no mobile para o lightbox de fotos da hospedagem no formulário
+  useEffect(() => {
+    if (!previewPhotoUrl) return;
+
+    window.history.pushState({ previewPhotoOpen: true }, '');
+
+    const handlePopState = () => {
+      setPreviewPhotoUrl(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [previewPhotoUrl]);
+
   // Transporte
   const [distanceKm, setDistanceKm] = useState<number>(300);
   const [fuelPricePerLiter, setFuelPricePerLiter] = useState<number>(5.89);

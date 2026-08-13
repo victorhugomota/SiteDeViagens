@@ -46,6 +46,25 @@ export function App() {
     setThemeMode(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
+  // Suporte a comando Voltar (Gesture / Botão Voltar do celular)
+  useEffect(() => {
+    const isAnyModalOpen = isFormModalOpen || isDetailModalOpen;
+    if (!isAnyModalOpen) return;
+
+    window.history.pushState({ modalOpen: true }, '');
+
+    const handlePopState = () => {
+      if (isFormModalOpen) setIsFormModalOpen(false);
+      if (isDetailModalOpen) setIsDetailModalOpen(false);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isFormModalOpen, isDetailModalOpen]);
+
   // Escuta a coleção 'trips' no Cloud Firestore em tempo real
   useEffect(() => {
     setIsLoading(true);

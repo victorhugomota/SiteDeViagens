@@ -51,6 +51,25 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
   const [selectedImageForLightbox, setSelectedImageForLightbox] = useState<string | null>(null);
   const memoryInputRef = useRef<HTMLInputElement>(null);
 
+  // Fecha o lightbox/foto expandida ao acionar o gesto de voltar no mobile
+  React.useEffect(() => {
+    const isAnyLightboxOpen = !!selectedImageForLightbox || !!selectedMemory;
+    if (!isAnyLightboxOpen) return;
+
+    window.history.pushState({ lightboxOpen: true }, '');
+
+    const handlePopState = () => {
+      if (selectedImageForLightbox) setSelectedImageForLightbox(null);
+      if (selectedMemory) setSelectedMemory(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [selectedImageForLightbox, selectedMemory]);
+
   if (!isOpen || !trip) return null;
 
   const nights = calculateNights(trip.startDate, trip.endDate);
