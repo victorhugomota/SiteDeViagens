@@ -46,9 +46,11 @@ export const MapRoute: React.FC<MapRouteProps> = ({
   const centerLat = (originCoords[0] + destCoords[0]) / 2;
   const centerLng = (originCoords[1] + destCoords[1]) / 2;
 
+  const polylineKey = externalPolyline ? externalPolyline.length : 0;
+
   // Se não recebeu polyline externa, busca do OSRM
   useEffect(() => {
-    if (externalPolyline) {
+    if (externalPolyline && externalPolyline.length > 0) {
       setRealPolyline(externalPolyline);
       return;
     }
@@ -63,7 +65,7 @@ export const MapRoute: React.FC<MapRouteProps> = ({
     };
     loadPolyline();
     return () => { cancelled = true; };
-  }, [originLat, originLng, destLat, destLng, externalPolyline]);
+  }, [originLat, originLng, destLat, destLng, polylineKey]);
 
   const nearbyPlaces = getNearbyRecommendations(destinationName || 'Destino', destLat, destLng);
   const filteredPlaces = nearbyPlaces.filter(p => activeCategory === 'all' || p.category === activeCategory);

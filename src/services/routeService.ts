@@ -64,54 +64,93 @@ export function calculateCarRentalTotal(carRental: Partial<CarRentalInfo>): numb
 }
 
 /**
- * Busca sugestões de autocompletar para qualquer endereço (partida ou destino)
+ * Busca sugestões de autocompletar via Photon API (suporte a CORS 100% livre) com fallback Nominatim simples (sem headers customizados)
  */
 export async function searchPlaceAutocomplete(query: string): Promise<PlaceAutocompleteOption[]> {
   if (!query || query.trim().length < 2) return [];
+  const q = query.trim();
 
+  // 1. Photon API (OpenStreetMap geocoder com suporte a CORS irrestrito)
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query.trim())}&limit=6&addressdetails=1`;
-    const res = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Language': 'pt-BR,pt;q=0.9'
+    const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lang=default`;
+    const res = await fetch(photonUrl);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.features && data.features.length > 0) {
+        const results: PlaceAutocompleteOption[] = data.features.map((feat: any) => {
+          const props = feat.properties || {};
+          const coords = feat.geometry?.coordinates || [0, 0];
+          const lng = coords[0];
+          const lat = coords[1];
+
+          const name = props.name || '';
+          const street = props.street || (props.name !== props.city ? props.name : '');
+          const suburb = props.suburb || props.district || '';
+          const city = props.city || props.town || props.county || props.state || '';
+          const state = props.state || '';
+          const country = props.country || 'Brasil';
+
+          const parts = [street, suburb, city].filter(Boolean);
+          const shortName = parts.length > 0 ? parts.join(', ') + (state ? ' - ' + state : '') : (name || q);
+
+          const fullParts = [name, street, suburb, city, state, country].filter(Boolean);
+          const fullName = Array.from(new Set(fullParts)).join(', ');
+
+          return {
+            display_name: fullName || shortName,
+            display_name_short: shortName,
+            city,
+            state,
+            lat,
+            lng
+          };
+        });
+
+        if (results.length > 0) return results;
       }
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json();
-    return data.map((item: any) => {
-      const addr = item.address || {};
-      const road = addr.road || addr.pedestrian || addr.path || addr.street || '';
-      const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '';
-      const city = addr.city || addr.town || addr.municipality || addr.village || addr.county || '';
-      const state = addr.state || '';
-      const postcode = addr.postcode || '';
-      const country = addr.country || 'Brasil';
-
-      const parts = [road, suburb, city].filter(Boolean);
-      const shortName = parts.length > 0 ? parts.join(', ') + (state ? ' - ' + state : '') : item.display_name.split(',').slice(0, 3).join(',');
-
-      const fullParts = [road, suburb, city, state, postcode, country].filter(Boolean);
-      const fullName = fullParts.length > 0 ? fullParts.join(', ') : item.display_name;
-
-      return {
-        display_name: fullName,
-        display_name_short: shortName,
-        city,
-        state,
-        lat: parseFloat(item.lat),
-        lng: parseFloat(item.lon)
-      };
-    });
+    }
   } catch (err) {
-    console.warn("Erro no autocompletar:", err);
-    return [];
+    console.warn("Photon API fallback para Nominatim:", err);
   }
+
+  // 2. Fallback Nominatim: fetch simples SEM headers customizados para nao disparar preflight OPTIONS CORS
+  try {
+    const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6&addressdetails=1`;
+    const res = await fetch(nomUrl);
+    if (res.ok) {
+      const data = await res.json();
+      return data.map((item: any) => {
+        const addr = item.address || {};
+        const road = addr.road || addr.pedestrian || addr.path || addr.street || '';
+        const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '';
+        const city = addr.city || addr.town || addr.municipality || addr.village || addr.county || '';
+        const state = addr.state || '';
+        const postcode = addr.postcode || '';
+        const country = addr.country || 'Brasil';
+
+        const parts = [road, suburb, city].filter(Boolean);
+        const shortName = parts.length > 0 ? parts.join(', ') + (state ? ' - ' + state : '') : item.display_name.split(',').slice(0, 3).join(',');
+
+        const fullParts = [road, suburb, city, state, postcode, country].filter(Boolean);
+        const fullName = fullParts.length > 0 ? fullParts.join(', ') : item.display_name;
+
+        return {
+          display_name: fullName,
+          display_name_short: shortName,
+          city,
+          state,
+          lat: parseFloat(item.lat),
+          lng: parseFloat(item.lon)
+        };
+      });
+    }
+  } catch (err) {
+    console.warn("Erro no Nominatim fallback:", err);
+  }
+
+  return [];
 }
 
-// Alias para compatibilidade retroativa
 export const searchDestinationAutocomplete = searchPlaceAutocomplete;
 
 function haversineDistance(
@@ -192,37 +231,40 @@ export async function calculateRouteDetails(
   let routePolyline: [number, number][] | undefined;
 
   // Geocode Partida se não tiver coordenadas e não for a padrão
-  if (!originCoordsInput && originQuery && !originQuery.includes("Alfredo Pucci")) {
+  if ((!originCoordsInput || (originLat === DEFAULT_ORIGIN_COORDS.lat && originLng === DEFAULT_ORIGIN_COORDS.lng)) && originQuery && !originQuery.includes("Alfredo Pucci")) {
     try {
-      const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(originQuery.trim())}&limit=1`;
-      const geoRes = await fetch(geoUrl, { headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' } });
-      if (geoRes.ok) {
-        const geoData = await geoRes.json();
-        if (geoData && geoData[0]) {
-          originLat = parseFloat(geoData[0].lat);
-          originLng = parseFloat(geoData[0].lon);
+      const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(originQuery.trim())}&limit=1`;
+      const res = await fetch(photonUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.features && data.features[0]) {
+          const coords = data.features[0].geometry.coordinates;
+          originLng = coords[0];
+          originLat = coords[1];
         }
       }
     } catch (e) {
-      console.warn("Erro ao geocodificar origem:", e);
+      console.warn("Erro ao geocodificar origem via Photon:", e);
     }
   }
 
   // Geocode Destino se não tiver coordenadas
-  if (!destCoordsInput && destinationQuery && destinationQuery.trim().length > 0) {
+  if ((!destCoordsInput || (destLat === -27.5954 && destLng === -48.5480)) && destinationQuery && destinationQuery.trim().length > 0) {
     try {
-      const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destinationQuery.trim())}&limit=1`;
-      const geoRes = await fetch(geoUrl, { headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' } });
-      if (geoRes.ok) {
-        const geoData = await geoRes.json();
-        if (geoData && geoData[0]) {
-          destLat = parseFloat(geoData[0].lat);
-          destLng = parseFloat(geoData[0].lon);
-          destinationCityState = geoData[0].display_name.split(',').slice(0, 3).join(',');
+      const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(destinationQuery.trim())}&limit=1`;
+      const res = await fetch(photonUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.features && data.features[0]) {
+          const coords = data.features[0].geometry.coordinates;
+          destLng = coords[0];
+          destLat = coords[1];
+          const props = data.features[0].properties || {};
+          destinationCityState = [props.name || props.city, props.state].filter(Boolean).join(', ');
         }
       }
     } catch (e) {
-      console.warn("Erro ao geocodificar destino:", e);
+      console.warn("Erro ao geocodificar destino via Photon:", e);
     }
   }
 
