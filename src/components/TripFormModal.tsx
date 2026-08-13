@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X, MapPin, Calendar, Hotel, Fuel, Ticket, Plus, Trash2, Calculator,
   Sparkles, Navigation, RotateCcw, Info, Car, AlertCircle, Image, Link,
@@ -7,12 +7,13 @@ import {
 import type { Trip, TripFormData, ExpenseItem, CarRentalInfo } from '../types/trip';
 import {
   DEFAULT_ORIGIN_ADDRESS,
+  DEFAULT_ORIGIN_COORDS,
   calculateRouteDetails,
   estimateTollCost,
   calculateFuelCost,
   calculateCarRentalDays,
   DEFAULT_CAR_RENTAL_DAILY_PRICE,
-  searchDestinationAutocomplete,
+  searchPlaceAutocomplete,
   type PlaceAutocompleteOption
 } from '../services/routeService';
 import { formatCurrency, calculateNights } from '../utils/formatters';
@@ -102,16 +103,26 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
 
   // Básico
   const [title, setTitle] = useState('');
+  
+  // Partida (Origin)
   const [originAddress, setOriginAddress] = useState(DEFAULT_ORIGIN_ADDRESS);
+  const [originLat, setOriginLat] = useState<number>(DEFAULT_ORIGIN_COORDS.lat);
+  const [originLng, setOriginLng] = useState<number>(DEFAULT_ORIGIN_COORDS.lng);
+  const [originSuggestions, setOriginSuggestions] = useState<PlaceAutocompleteOption[]>([]);
+  const [showOriginAutocomplete, setShowOriginAutocomplete] = useState(false);
+  const originRef = useRef<HTMLDivElement>(null);
+  const originTimerRef = useRef<any>(null);
+
+  // Destino (Destination)
   const [destinationAddress, setDestinationAddress] = useState('');
   const [destLat, setDestLat] = useState<number>(-27.5954);
   const [destLng, setDestLng] = useState<number>(-48.5480);
-  const [routePolyline, setRoutePolyline] = useState<[number, number][] | undefined>();
+  const [destSuggestions, setDestSuggestions] = useState<PlaceAutocompleteOption[]>([]);
+  const [showDestAutocomplete, setShowDestAutocomplete] = useState(false);
+  const destRef = useRef<HTMLDivElement>(null);
+  const destTimerRef = useRef<any>(null);
 
-  // Autocomplete
-  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<PlaceAutocompleteOption[]>([]);
-  const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const autocompleteRef = useRef<HTMLDivElement>(null);
+  const [routePolyline, setRoutePolyline] = useState<[number, number][] | undefined>();
 
   // Datas
   const [startDate, setStartDate] = useState(todayStr);
@@ -121,7 +132,7 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   const [accommodationName, setAccommodationName] = useState('');
   const [pricePerNight, setPricePerNight] = useState<number>(150);
   const [accommodationUrl, setAccommodationUrl] = useState('');
-  const [accommodationPhotos, setAccommodationPhotos] = useState<string[]>([]); // base64
+  const [accommodationPhotos, setAccommodationPhotos] = useState<string[]>([]);
 
   // Imagem de Capa
   const [coverImageBase64, setCoverImageBase64] = useState<string>('');
@@ -153,11 +164,14 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [notes, setNotes] = useState('');
 
-  // Fechar autocomplete ao clicar fora
+  // Fechar autocompletes ao clicar fora
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (autocompleteRef.current && !autocompleteRef.current.contains(e.target as Node)) {
-        setShowAutocomplete(false);
+      if (originRef.current && !originRef.current.contains(e.target as Node)) {
+        setShowOriginAutocomplete(false);
+      }
+      if (destRef.current && !destRef.current.contains(e.target as Node)) {
+        setShowDestAutocomplete(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -182,6 +196,9 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
     if (tripToEdit && isOpen) {
       setTitle(tripToEdit.title || '');
       setOriginAddress(tripToEdit.originAddress || DEFAULT_ORIGIN_ADDRESS);
+      setOriginLat(DEFAULT_ORIGIN_COORDS.lat);
+      setOriginLng(DEFAULT_ORIGIN_COORDS.lng);
+
       setDestinationAddress(tripToEdit.destinationAddress || '');
       setDestLat(tripToEdit.destinationLat || -27.5954);
       setDestLng(tripToEdit.destinationLng || -48.5480);
@@ -213,8 +230,13 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   }, [tripToEdit, isOpen]);
 
   const resetForm = () => {
-    setTitle(''); setOriginAddress(DEFAULT_ORIGIN_ADDRESS);
-    setDestinationAddress(''); setDestLat(-27.5954); setDestLng(-48.5480); setRoutePolyline(undefined);
+    setTitle('');
+    setOriginAddress(DEFAULT_ORIGIN_ADDRESS);
+    setOriginLat(DEFAULT_ORIGIN_COORDS.lat);
+    setOriginLng(DEFAULT_ORIGIN_COORDS.lng);
+    setDestinationAddress('');
+    setDestLat(-27.5954); setDestLng(-48.5480);
+    setRoutePolyline(undefined);
     setStartDate(todayStr); setEndDate(nextWeekStr);
     setAccommodationName(''); setPricePerNight(150);
     setAccommodationUrl(''); setAccommodationPhotos([]); setCoverImageBase64('');
@@ -225,38 +247,94 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
     setNotes('');
   };
 
-  // Autocomplete
-  const handleDestinationChange = useCallback(async (value: string) => {
-    setDestinationAddress(value);
-    if (value.trim().length >= 2) {
-      const suggestions = await searchDestinationAutocomplete(value);
-      setAutocompleteSuggestions(suggestions);
-      setShowAutocomplete(true);
-    } else {
-      setShowAutocomplete(false);
+  // Search Origin Autocomplete
+  const handleOriginSearch = (query: string) => {
+    if (originTimerRef.current) clearTimeout(originTimerRef.current);
+    if (!query || query.trim().length < 2) {
+      setOriginSuggestions([]);
+      setShowOriginAutocomplete(false);
+      return;
     }
-  }, []);
-
-  const handleSelectAutocomplete = (option: PlaceAutocompleteOption) => {
-    setDestinationAddress(option.display_name_short || option.display_name);
-    setDestLat(option.lat);
-    setDestLng(option.lng);
-    setShowAutocomplete(false);
-    autoCalculateRoute(option.display_name);
+    originTimerRef.current = setTimeout(async () => {
+      const suggestions = await searchPlaceAutocomplete(query);
+      setOriginSuggestions(suggestions);
+      setShowOriginAutocomplete(suggestions.length > 0);
+    }, 250);
   };
 
-  const autoCalculateRoute = async (destQuery?: string) => {
-    const query = destQuery !== undefined ? destQuery : destinationAddress;
-    if (!query.trim()) return;
+  const handleOriginChange = (value: string) => {
+    setOriginAddress(value);
+    handleOriginSearch(value);
+  };
+
+  const handleSelectOrigin = (option: PlaceAutocompleteOption) => {
+    const addr = option.display_name_short || option.display_name;
+    setOriginAddress(addr);
+    setOriginLat(option.lat);
+    setOriginLng(option.lng);
+    setShowOriginAutocomplete(false);
+    autoCalculateRoute(addr, destinationAddress, { lat: option.lat, lng: option.lng }, { lat: destLat, lng: destLng });
+  };
+
+  // Search Destination Autocomplete
+  const handleDestSearch = (query: string) => {
+    if (destTimerRef.current) clearTimeout(destTimerRef.current);
+    if (!query || query.trim().length < 2) {
+      setDestSuggestions([]);
+      setShowDestAutocomplete(false);
+      return;
+    }
+    destTimerRef.current = setTimeout(async () => {
+      const suggestions = await searchPlaceAutocomplete(query);
+      setDestSuggestions(suggestions);
+      setShowDestAutocomplete(suggestions.length > 0);
+    }, 250);
+  };
+
+  const handleDestChange = (value: string) => {
+    setDestinationAddress(value);
+    handleDestSearch(value);
+  };
+
+  const handleSelectDest = (option: PlaceAutocompleteOption) => {
+    const addr = option.display_name_short || option.display_name;
+    setDestinationAddress(addr);
+    setDestLat(option.lat);
+    setDestLng(option.lng);
+    setShowDestAutocomplete(false);
+    autoCalculateRoute(originAddress, addr, { lat: originLat, lng: originLng }, { lat: option.lat, lng: option.lng });
+  };
+
+  const autoCalculateRoute = async (
+    origQuery?: string,
+    destQuery?: string,
+    knownOrig?: { lat: number; lng: number },
+    knownDest?: { lat: number; lng: number }
+  ) => {
+    const oQuery = origQuery !== undefined ? origQuery : originAddress;
+    const dQuery = destQuery !== undefined ? destQuery : destinationAddress;
+    if (!dQuery.trim()) return;
+
     setIsCalculatingRoute(true);
     try {
-      const routeInfo = await calculateRouteDetails(query, fuelPricePerLiter, fuelEfficiencyKmL, isRoundTrip);
+      const routeInfo = await calculateRouteDetails(
+        oQuery,
+        dQuery,
+        fuelPricePerLiter,
+        fuelEfficiencyKmL,
+        isRoundTrip,
+        knownOrig || { lat: originLat, lng: originLng },
+        knownDest || { lat: destLat, lng: destLng }
+      );
+
       setDistanceKm(routeInfo.distanceKm);
       setTollCost(routeInfo.estimatedTollCost);
+      setOriginLat(routeInfo.originLat);
+      setOriginLng(routeInfo.originLng);
       setDestLat(routeInfo.destLat);
       setDestLng(routeInfo.destLng);
       if (routeInfo.routePolyline) setRoutePolyline(routeInfo.routePolyline);
-      if (!title) setTitle(`Viagem para ${query.split(',')[0]}`);
+      if (!title) setTitle(`Viagem para ${dQuery.split(',')[0]}`);
     } finally {
       setIsCalculatingRoute(false);
     }
@@ -265,11 +343,14 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   // Restaurar partida e limpar destino
   const handleRestoreOrigin = () => {
     setOriginAddress(DEFAULT_ORIGIN_ADDRESS);
+    setOriginLat(DEFAULT_ORIGIN_COORDS.lat);
+    setOriginLng(DEFAULT_ORIGIN_COORDS.lng);
     setDestinationAddress('');
     setDestLat(-27.5954);
     setDestLng(-48.5480);
     setRoutePolyline(undefined);
-    setShowAutocomplete(false);
+    setShowOriginAutocomplete(false);
+    setShowDestAutocomplete(false);
   };
 
   // Upload imagem de capa
@@ -476,34 +557,63 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              
               {/* PARTIDA */}
-              <div>
+              <div ref={originRef} className="relative">
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={labelStyle}>
-                    Local de Partida
+                  <label className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1" style={labelStyle}>
+                    <Navigation className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} /> Local de Partida *
                   </label>
                   <button type="button" onClick={handleRestoreOrigin}
                     className="text-[11px] flex items-center gap-1 cursor-pointer hover:underline"
                     style={{ color: 'var(--accent)' }}
                   >
-                    <RotateCcw className="w-3 h-3" /> Restaurar & Limpar Destino
+                    <RotateCcw className="w-3 h-3" /> Restaurar Padrão
                   </button>
                 </div>
                 <input
                   type="text"
+                  placeholder="Digite o endereço de partida..."
                   value={originAddress}
-                  onChange={(e) => setOriginAddress(e.target.value)}
-                  className="w-full border rounded-xl px-3 py-2.5 text-xs outline-none"
+                  onChange={(e) => handleOriginChange(e.target.value)}
+                  onFocus={() => { if (originAddress.length >= 2) handleOriginSearch(originAddress); }}
+                  onClick={() => { if (originAddress.length >= 2) handleOriginSearch(originAddress); }}
+                  className="w-full border rounded-xl px-3 py-2.5 text-xs outline-none transition-colors"
                   style={inputStyle}
+                  required
                 />
                 <p className="text-[10px] mt-1 flex items-center gap-1" style={labelStyle}>
                   <Info className="w-3 h-3" style={{ color: 'var(--accent)' }} />
                   Padrão: Rua Alfredo Pucci, 80 — Ribeirão Preto SP
                 </p>
+
+                {/* Dropdown Autocomplete Partida */}
+                {showOriginAutocomplete && originSuggestions.length > 0 && (
+                  <div
+                    className="absolute left-0 right-0 top-full mt-1 rounded-2xl border shadow-2xl z-50 max-h-52 overflow-y-auto animate-fadeIn"
+                    style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-secondary)' }}
+                  >
+                    {originSuggestions.map((item, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelectOrigin(item)}
+                        className="w-full text-left px-4 py-3 text-xs flex items-start gap-2 border-b last:border-0 hover:opacity-80 transition-opacity cursor-pointer"
+                        style={{ borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}
+                      >
+                        <Navigation className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'var(--accent)' }} />
+                        <div>
+                          <span className="font-semibold block">{item.display_name_short}</span>
+                          <span className="text-[10px] block mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.display_name}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* DESTINO com Autocomplete */}
-              <div ref={autocompleteRef} className="relative">
+              {/* DESTINO */}
+              <div ref={destRef} className="relative">
                 <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5" style={labelStyle}>
                   <MapPin className="w-3.5 h-3.5 text-rose-400" /> Local de Destino *
                 </label>
@@ -512,9 +622,10 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
                     type="text"
                     placeholder="Rua, cidade, local de destino..."
                     value={destinationAddress}
-                    onChange={(e) => handleDestinationChange(e.target.value)}
-                    onFocus={() => destinationAddress.length >= 2 && setShowAutocomplete(true)}
-                    className="flex-1 border rounded-xl px-3 py-2.5 text-sm outline-none"
+                    onChange={(e) => handleDestChange(e.target.value)}
+                    onFocus={() => { if (destinationAddress.length >= 2) handleDestSearch(destinationAddress); }}
+                    onClick={() => { if (destinationAddress.length >= 2) handleDestSearch(destinationAddress); }}
+                    className="flex-1 border rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
                     style={inputStyle}
                     required
                   />
@@ -522,26 +633,26 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
                     type="button"
                     onClick={() => autoCalculateRoute()}
                     disabled={isCalculatingRoute}
-                    className="px-3 rounded-xl text-xs font-semibold text-white cursor-pointer flex items-center gap-1 shrink-0"
+                    className="px-3.5 rounded-xl text-xs font-semibold text-white cursor-pointer flex items-center gap-1.5 shrink-0 transition-transform active:scale-95"
                     style={{ background: 'linear-gradient(135deg, var(--accent-dark), var(--accent))' }}
                   >
-                    {isCalculatingRoute ? <span className="animate-spin">⟳</span> : <Calculator className="w-3.5 h-3.5" />}
+                    {isCalculatingRoute ? <span className="animate-spin">⟳</span> : <Calculator className="w-4 h-4" />}
                     <span className="hidden sm:inline">Calcular</span>
                   </button>
                 </div>
 
-                {/* Lista de Sugestões */}
-                {showAutocomplete && autocompleteSuggestions.length > 0 && (
+                {/* Dropdown Autocomplete Destino */}
+                {showDestAutocomplete && destSuggestions.length > 0 && (
                   <div
                     className="absolute left-0 right-0 top-full mt-1 rounded-2xl border shadow-2xl z-50 max-h-52 overflow-y-auto animate-fadeIn"
                     style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-secondary)' }}
                   >
-                    {autocompleteSuggestions.map((item, idx) => (
+                    {destSuggestions.map((item, idx) => (
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => handleSelectAutocomplete(item)}
-                        className="w-full text-left px-4 py-3 text-xs flex items-start gap-2 border-b last:border-0 hover:opacity-80 transition-opacity"
+                        onClick={() => handleSelectDest(item)}
+                        className="w-full text-left px-4 py-3 text-xs flex items-start gap-2 border-b last:border-0 hover:opacity-80 transition-opacity cursor-pointer"
                         style={{ borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}
                       >
                         <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: 'var(--accent)' }} />
@@ -554,6 +665,7 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
                   </div>
                 )}
               </div>
+
             </div>
           </div>
 
@@ -561,6 +673,8 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
           {destinationAddress.trim().length > 0 && (
             <MapRoute
               destinationName={destinationAddress}
+              originLat={originLat}
+              originLng={originLng}
               destLat={destLat}
               destLng={destLng}
               routePolyline={routePolyline}

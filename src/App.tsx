@@ -155,7 +155,7 @@ export function App() {
         className="border-t py-5 text-center text-xs"
         style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-primary)', color: 'var(--text-muted)' }}
       >
-        <p>ViajaMais Pro • Sistema de Viagens & Controle de Gastos • Firebase Cloud Firestore</p>
+        <p>Viagens Victor e Maria • Sistema de Viagens & Controle de Gastos • Firebase Cloud Firestore</p>
       </footer>
     </div>
   );

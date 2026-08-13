@@ -13,6 +13,8 @@ export interface RouteCalculationResult {
   estimatedTollCost: number;
   calculatedFuelCost: number;
   destinationCityState: string;
+  originLat: number;
+  originLng: number;
   destLat: number;
   destLng: number;
   durationMinutes?: number;
@@ -21,18 +23,13 @@ export interface RouteCalculationResult {
 
 export interface PlaceAutocompleteOption {
   display_name: string;
-  display_name_short: string; // Nome curto para o campo de input
+  display_name_short: string;
   city: string;
   state: string;
   lat: number;
   lng: number;
 }
 
-/**
- * Calcula o número de diárias de aluguel de carro considerando a Regra do Domingo:
- * A diária só pode ser iniciada de segunda a sábado.
- * Se o início OU o fim da viagem for em um domingo, adiciona +1 diária de locação.
- */
 export function calculateCarRentalDays(startDateStr: string, endDateStr: string): { daysCount: number; hasSundayExtraDay: boolean } {
   if (!startDateStr || !endDateStr) {
     return { daysCount: 1, hasSundayExtraDay: false };
@@ -48,7 +45,6 @@ export function calculateCarRentalDays(startDateStr: string, endDateStr: string)
   let baseDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   if (baseDays < 1) baseDays = 1;
 
-  // getDay(): 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
   const isStartSunday = startDate.getDay() === 0;
   const isEndSunday = endDate.getDay() === 0;
 
@@ -58,9 +54,6 @@ export function calculateCarRentalDays(startDateStr: string, endDateStr: string)
   return { daysCount, hasSundayExtraDay };
 }
 
-/**
- * Média de preço da diária de veiculo no mercado (ex: R$ 120,00)
- */
 export const DEFAULT_CAR_RENTAL_DAILY_PRICE = 120;
 
 export function calculateCarRentalTotal(carRental: Partial<CarRentalInfo>): number {
@@ -71,16 +64,18 @@ export function calculateCarRentalTotal(carRental: Partial<CarRentalInfo>): numb
 }
 
 /**
- * Busca sugestões de autocompletar ao digitar o local de destino.
- * Retorna o display_name COMPLETO do Nominatim para melhor clareza.
+ * Busca sugestões de autocompletar para qualquer endereço (partida ou destino)
  */
-export async function searchDestinationAutocomplete(query: string): Promise<PlaceAutocompleteOption[]> {
+export async function searchPlaceAutocomplete(query: string): Promise<PlaceAutocompleteOption[]> {
   if (!query || query.trim().length < 2) return [];
 
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=6&addressdetails=1`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query.trim())}&limit=6&addressdetails=1`;
     const res = await fetch(url, {
-      headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Language': 'pt-BR,pt;q=0.9'
+      }
     });
 
     if (!res.ok) return [];
@@ -88,18 +83,16 @@ export async function searchDestinationAutocomplete(query: string): Promise<Plac
     const data = await res.json();
     return data.map((item: any) => {
       const addr = item.address || {};
-      const road = addr.road || addr.pedestrian || addr.path || '';
-      const suburb = addr.suburb || addr.neighbourhood || addr.quarter || '';
+      const road = addr.road || addr.pedestrian || addr.path || addr.street || '';
+      const suburb = addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '';
       const city = addr.city || addr.town || addr.municipality || addr.village || addr.county || '';
       const state = addr.state || '';
       const postcode = addr.postcode || '';
       const country = addr.country || 'Brasil';
 
-      // Nome curto: Rua, Bairro - Cidade/Estado
       const parts = [road, suburb, city].filter(Boolean);
       const shortName = parts.length > 0 ? parts.join(', ') + (state ? ' - ' + state : '') : item.display_name.split(',').slice(0, 3).join(',');
 
-      // Nome completo: tudo disponível
       const fullParts = [road, suburb, city, state, postcode, country].filter(Boolean);
       const fullName = fullParts.length > 0 ? fullParts.join(', ') : item.display_name;
 
@@ -113,14 +106,14 @@ export async function searchDestinationAutocomplete(query: string): Promise<Plac
       };
     });
   } catch (err) {
-    console.warn("Erro no autocompletar de destino:", err);
+    console.warn("Erro no autocompletar:", err);
     return [];
   }
 }
 
-/**
- * Fórmula de Haversine ajustada por fator rodoviário (1.28x)
- */
+// Alias para compatibilidade retroativa
+export const searchDestinationAutocomplete = searchPlaceAutocomplete;
+
 function haversineDistance(
   lat1: number, lon1: number,
   lat2: number, lon2: number
@@ -137,9 +130,6 @@ function haversineDistance(
   return Math.round(straightDistance * 1.28);
 }
 
-/**
- * Estima o custo de pedágios (ida e volta)
- */
 export function estimateTollCost(distanceKm: number, isRoundTrip: boolean = true): number {
   const totalKm = isRoundTrip ? distanceKm * 2 : distanceKm;
   if (totalKm < 40) return 0;
@@ -149,9 +139,6 @@ export function estimateTollCost(distanceKm: number, isRoundTrip: boolean = true
   return Math.round((estimatedPlazas * averageTollPrice) * 100) / 100;
 }
 
-/**
- * Calcula o custo total de combustível (sempre ida e volta)
- */
 export function calculateFuelCost(
   distanceKm: number,
   fuelPricePerLiter: number,
@@ -164,9 +151,6 @@ export function calculateFuelCost(
   return Math.round((litersNeeded * fuelPricePerLiter) * 100) / 100;
 }
 
-/**
- * Busca a polyline real da rota via OSRM (geometrias reais das estradas)
- */
 export async function fetchRealRoutePolyline(
   originLat: number,
   originLng: number,
@@ -179,7 +163,6 @@ export async function fetchRealRoutePolyline(
     if (!res.ok) return null;
     const data = await res.json();
     if (data.routes && data.routes.length > 0 && data.routes[0].geometry?.coordinates) {
-      // GeoJSON retorna [lng, lat], Leaflet precisa [lat, lng]
       return data.routes[0].geometry.coordinates.map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
     }
     return null;
@@ -189,60 +172,78 @@ export async function fetchRealRoutePolyline(
 }
 
 /**
- * Calcula distância e rota completa, incluindo polyline real
+ * Calcula distância e rota completa geocodificando Origem e Destino
  */
 export async function calculateRouteDetails(
+  originQuery: string,
   destinationQuery: string,
   fuelPricePerLiter: number,
   fuelEfficiencyKmL: number = 10,
-  isRoundTrip: boolean = true
+  isRoundTrip: boolean = true,
+  originCoordsInput?: { lat: number; lng: number },
+  destCoordsInput?: { lat: number; lng: number }
 ): Promise<RouteCalculationResult> {
-  let distanceKm = 150;
+  let originLat = originCoordsInput?.lat ?? DEFAULT_ORIGIN_COORDS.lat;
+  let originLng = originCoordsInput?.lng ?? DEFAULT_ORIGIN_COORDS.lng;
+
+  let destLat = destCoordsInput?.lat ?? -27.5954;
+  let destLng = destCoordsInput?.lng ?? -48.5480;
   let destinationCityState = destinationQuery;
-  let destLat = -27.5954;
-  let destLng = -48.5480;
   let routePolyline: [number, number][] | undefined;
 
+  // Geocode Partida se não tiver coordenadas e não for a padrão
+  if (!originCoordsInput && originQuery && !originQuery.includes("Alfredo Pucci")) {
+    try {
+      const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(originQuery.trim())}&limit=1`;
+      const geoRes = await fetch(geoUrl, { headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' } });
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData && geoData[0]) {
+          originLat = parseFloat(geoData[0].lat);
+          originLng = parseFloat(geoData[0].lon);
+        }
+      }
+    } catch (e) {
+      console.warn("Erro ao geocodificar origem:", e);
+    }
+  }
+
+  // Geocode Destino se não tiver coordenadas
+  if (!destCoordsInput && destinationQuery && destinationQuery.trim().length > 0) {
+    try {
+      const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destinationQuery.trim())}&limit=1`;
+      const geoRes = await fetch(geoUrl, { headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' } });
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData && geoData[0]) {
+          destLat = parseFloat(geoData[0].lat);
+          destLng = parseFloat(geoData[0].lon);
+          destinationCityState = geoData[0].display_name.split(',').slice(0, 3).join(',');
+        }
+      }
+    } catch (e) {
+      console.warn("Erro ao geocodificar destino:", e);
+    }
+  }
+
+  let distanceKm = haversineDistance(originLat, originLng, destLat, destLng);
+
   try {
-    const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destinationQuery)}&limit=1`;
-    const geoRes = await fetch(geoUrl, {
-      headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
-    });
-
-    if (geoRes.ok) {
-      const geoData = await geoRes.json();
-      if (geoData && geoData.length > 0) {
-        destLat = parseFloat(geoData[0].lat);
-        destLng = parseFloat(geoData[0].lon);
-        destinationCityState = geoData[0].display_name.split(',').slice(0, 3).join(',');
-
-        try {
-          // Buscar distância E polyline real via OSRM
-          const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${DEFAULT_ORIGIN_COORDS.lng},${DEFAULT_ORIGIN_COORDS.lat};${destLng},${destLat}?overview=full&geometries=geojson`;
-          const osrmRes = await fetch(osrmUrl);
-          if (osrmRes.ok) {
-            const osrmData = await osrmRes.json();
-            if (osrmData.routes && osrmData.routes.length > 0) {
-              distanceKm = Math.round(osrmData.routes[0].distance / 1000);
-              // Extrair polyline real
-              if (osrmData.routes[0].geometry?.coordinates) {
-                routePolyline = osrmData.routes[0].geometry.coordinates.map(
-                  ([lng, lat]: [number, number]) => [lat, lng] as [number, number]
-                );
-              }
-            } else {
-              distanceKm = haversineDistance(DEFAULT_ORIGIN_COORDS.lat, DEFAULT_ORIGIN_COORDS.lng, destLat, destLng);
-            }
-          } else {
-            distanceKm = haversineDistance(DEFAULT_ORIGIN_COORDS.lat, DEFAULT_ORIGIN_COORDS.lng, destLat, destLng);
-          }
-        } catch {
-          distanceKm = haversineDistance(DEFAULT_ORIGIN_COORDS.lat, DEFAULT_ORIGIN_COORDS.lng, destLat, destLng);
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson`;
+    const osrmRes = await fetch(osrmUrl);
+    if (osrmRes.ok) {
+      const osrmData = await osrmRes.json();
+      if (osrmData.routes && osrmData.routes.length > 0) {
+        distanceKm = Math.round(osrmData.routes[0].distance / 1000);
+        if (osrmData.routes[0].geometry?.coordinates) {
+          routePolyline = osrmData.routes[0].geometry.coordinates.map(
+            ([lng, lat]: [number, number]) => [lat, lng] as [number, number]
+          );
         }
       }
     }
   } catch (err) {
-    console.warn("Erro ao buscar dados de rota:", err);
+    console.warn("Erro ao buscar rota OSRM:", err);
   }
 
   if (distanceKm < 5 && destinationQuery.trim().length > 0) {
@@ -257,15 +258,14 @@ export async function calculateRouteDetails(
     estimatedTollCost,
     calculatedFuelCost,
     destinationCityState,
+    originLat,
+    originLng,
     destLat,
     destLng,
     routePolyline
   };
 }
 
-/**
- * Gera recomendações de locais próximos (Restaurantes, Cafés, Hotéis e Atrações)
- */
 export function getNearbyRecommendations(destinationName: string, destLat: number, destLng: number): NearbyPlace[] {
   const name = destinationName.split(',')[0];
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Compass, Calendar as CalendarIcon, Grid, Plus, DollarSign, MapPin, Sun, Moon, Palette } from 'lucide-react';
+import { Calendar as CalendarIcon, Grid, Plus, DollarSign, MapPin, Sun, Moon, Palette } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 import type { Trip } from '../types/trip';
 
@@ -52,8 +52,6 @@ export const Header: React.FC<HeaderProps> = ({
   const totalEstimatedBudget = trips.reduce((acc, t) => acc + (t.totalEstimateCost || 0), 0);
   const totalKm = trips.reduce((acc, t) => acc + ((t.transport?.distanceKm || 0) * 2), 0); // sempre ida+volta
 
-  const currentAccentHex = ACCENT_COLORS.find(c => c.key === accent)?.hex || '#06b6d4';
-
   return (
     <header
       className="sticky top-0 z-30 shadow-xl backdrop-blur-md border-b"
@@ -67,17 +65,17 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Logo & Título */}
           <div className="flex items-center space-x-3 shrink-0">
-            <div
-              className="p-2.5 rounded-2xl shadow-lg text-white"
-              style={{ background: `linear-gradient(135deg, ${currentAccentHex}, #3b82f6)` }}
-            >
-              <Compass className="w-6 h-6" />
-            </div>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.jpg`}
+              alt="Victor e Maria"
+              className="w-11 h-11 rounded-2xl object-cover border-2 shadow-lg shrink-0"
+              style={{ borderColor: 'var(--accent)' }}
+            />
             <div>
-              <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                ViajaMais{' '}
+              <h1 className="text-xl font-bold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+                Viagens Victor e Maria
                 <span
-                  className="text-[10px] font-semibold uppercase tracking-widest ml-1 px-2 py-0.5 rounded-full"
+                  className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full"
                   style={{ color: 'var(--accent)', backgroundColor: 'var(--accent-bg)', border: '1px solid var(--accent-border)' }}
                 >
                   Pro

@@ -22,6 +22,8 @@ const placeIcon = new L.Icon({
 
 interface MapRouteProps {
   destinationName: string;
+  originLat?: number;
+  originLng?: number;
   destLat?: number;
   destLng?: number;
   routePolyline?: [number, number][]; // Pontos reais da estrada do OSRM
@@ -29,6 +31,8 @@ interface MapRouteProps {
 
 export const MapRoute: React.FC<MapRouteProps> = ({
   destinationName,
+  originLat = DEFAULT_ORIGIN_COORDS.lat,
+  originLng = DEFAULT_ORIGIN_COORDS.lng,
   destLat = -27.5954,
   destLng = -48.5480,
   routePolyline: externalPolyline
@@ -37,7 +41,7 @@ export const MapRoute: React.FC<MapRouteProps> = ({
   const [realPolyline, setRealPolyline] = useState<[number, number][] | null>(externalPolyline || null);
   const [loadingRoute, setLoadingRoute] = useState(false);
 
-  const originCoords: [number, number] = [DEFAULT_ORIGIN_COORDS.lat, DEFAULT_ORIGIN_COORDS.lng];
+  const originCoords: [number, number] = [originLat, originLng];
   const destCoords: [number, number] = [destLat, destLng];
   const centerLat = (originCoords[0] + destCoords[0]) / 2;
   const centerLng = (originCoords[1] + destCoords[1]) / 2;
@@ -51,7 +55,7 @@ export const MapRoute: React.FC<MapRouteProps> = ({
     let cancelled = false;
     const loadPolyline = async () => {
       setLoadingRoute(true);
-      const poly = await fetchRealRoutePolyline(DEFAULT_ORIGIN_COORDS.lat, DEFAULT_ORIGIN_COORDS.lng, destLat, destLng);
+      const poly = await fetchRealRoutePolyline(originLat, originLng, destLat, destLng);
       if (!cancelled) {
         setRealPolyline(poly);
         setLoadingRoute(false);
@@ -59,7 +63,7 @@ export const MapRoute: React.FC<MapRouteProps> = ({
     };
     loadPolyline();
     return () => { cancelled = true; };
-  }, [destLat, destLng, externalPolyline]);
+  }, [originLat, originLng, destLat, destLng, externalPolyline]);
 
   const nearbyPlaces = getNearbyRecommendations(destinationName || 'Destino', destLat, destLng);
   const filteredPlaces = nearbyPlaces.filter(p => activeCategory === 'all' || p.category === activeCategory);
