@@ -52,15 +52,62 @@
 [data-accent="pink"]   { --accent: #ec4899; --accent-light: #f472b6; --accent-dark: #db2777; --accent-bg: rgba(236,72,153,0.1); --accent-border: rgba(236,72,153,0.3); --shadow-accent: rgba(236,72,153,0.2); }
 [data-accent="blue"]   { --accent: #3b82f6; --accent-light: #60a5fa; --accent-dark: #2563eb; --accent-bg: rgba(59,130,246,0.1); --accent-border: rgba(59,130,246,0.3); --shadow-accent: rgba(59,130,246,0.2); }
 
+/* DEGRADÊS DE FUNDO */
+:root {
+  --bg-gradient: linear-gradient(135deg, #020817 0%, #0f172a 50%, #020817 100%);
+}
+
+[data-bg="gradient-default"] {
+  --bg-gradient: linear-gradient(135deg, #020817 0%, #0f172a 50%, #020817 100%);
+  --bg-primary: #020817;
+}
+
+[data-bg="gradient-aurora"] {
+  --bg-gradient: linear-gradient(135deg, #05141c 0%, #0f2238 50%, #160c29 100%);
+  --bg-primary: #05141c;
+}
+
+[data-bg="gradient-sunset"] {
+  --bg-gradient: linear-gradient(135deg, #1c0812 0%, #2a0e1a 50%, #090e1a 100%);
+  --bg-primary: #1c0812;
+}
+
+[data-bg="gradient-emerald"] {
+  --bg-gradient: linear-gradient(135deg, #031811 0%, #08281d 50%, #030d1a 100%);
+  --bg-primary: #031811;
+}
+
+[data-bg="gradient-royal"] {
+  --bg-gradient: linear-gradient(135deg, #0c081e 0%, #190e38 50%, #050c1e 100%);
+  --bg-primary: #0c081e;
+}
+
+/* DEGRADÊS PARA TEMA CLARO */
+[data-theme="light"] {
+  --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
+  --bg-primary: #f0f4f8;
+}
+
+[data-theme="light"][data-bg="gradient-rose"] {
+  --bg-gradient: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #f1f5f9 100%);
+  --bg-primary: #fff1f2;
+}
+
+[data-theme="light"][data-bg="gradient-ocean"] {
+  --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f1f5f9 100%);
+  --bg-primary: #f0f9ff;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-primary);
+  background: var(--bg-gradient);
+  background-attachment: fixed;
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

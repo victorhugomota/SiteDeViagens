@@ -41,13 +41,15 @@ export function App() {
     return () => unsubscribe();
   }, [selectedTripForDetail?.id]);
 
-  // Aplica tema/accent salvos no localStorage ao inicializar
+  // Aplica tema/accent/bg salvos no localStorage ao inicializar
   useEffect(() => {
     const theme = localStorage.getItem('viajaTheme') || 'dark';
     const accent = localStorage.getItem('viajaAccent') || 'cyan';
+    const bgGradient = localStorage.getItem('viajaBgGradient') || 'gradient-default';
     const root = document.documentElement;
     if (theme === 'light') root.setAttribute('data-theme', 'light');
     root.setAttribute('data-accent', accent);
+    root.setAttribute('data-bg', bgGradient);
   }, []);
 
   // Salvar Viagem (Criar ou Editar)
@@ -155,7 +157,7 @@ export function App() {
         className="border-t py-5 text-center text-xs"
         style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-primary)', color: 'var(--text-muted)' }}
       >
-        <p>Viagens Victor e Maria • Sistema de Viagens & Controle de Gastos • Firebase Cloud Firestore</p>
+        <p>Viagens Victor e Maria • Planejador de Viagens & Controle de Gastos</p>
       </footer>
     </div>
   );
