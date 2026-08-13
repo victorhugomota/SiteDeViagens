@@ -48,6 +48,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
   const [isAdding, setIsAdding] = useState(false);
   const [isAddingMemory, setIsAddingMemory] = useState(false);
   const [selectedMemory, setSelectedMemory] = useState<TripMemory | null>(null);
+  const [selectedImageForLightbox, setSelectedImageForLightbox] = useState<string | null>(null);
   const memoryInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen || !trip) return null;
@@ -101,12 +102,12 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
         style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}
       >
         {/* Banner */}
-        <div className="relative h-52 w-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-          <img src={imageUrl} alt={trip.destinationAddress} className="w-full h-full object-cover" />
+        <div className="relative h-52 w-full cursor-pointer group" style={{ backgroundColor: 'var(--bg-secondary)' }} onClick={() => setSelectedImageForLightbox(imageUrl)}>
+          <img src={imageUrl} alt={trip.destinationAddress} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-          <button onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 cursor-pointer transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onClose(); }}
+            className="absolute top-4 right-4 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white/20 cursor-pointer transition-colors z-10">
             <X className="w-5 h-5" />
           </button>
 
@@ -124,7 +125,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2" onClick={e => e.stopPropagation()}>
               <button
                 onClick={() => { onClose(); onEdit(trip); }}
                 className="p-2.5 rounded-xl bg-black/60 hover:bg-blue-600/80 text-white border border-white/20 hover:border-blue-400 cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 shadow-md"
@@ -187,6 +188,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-2" style={labelStyle}>
                   <Hotel className="w-4 h-4 text-indigo-400" /> {trip.accommodation?.name || 'Hospedagem'}
+                  <span className="text-[10px] text-slate-400 font-normal">(Clique na foto para ampliar)</span>
                 </h3>
                 {trip.accommodation?.url && (
                   <a href={trip.accommodation.url} target="_blank" rel="noopener noreferrer"
@@ -197,8 +199,18 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {trip.accommodation.photos!.map((photo, idx) => (
-                  <div key={idx} className="rounded-xl overflow-hidden h-24">
-                    <img src={photo} alt={`Hospedagem ${idx + 1}`} className="w-full h-full object-cover" />
+                  <div
+                    key={idx}
+                    className="relative rounded-xl overflow-hidden h-28 cursor-pointer group shadow-md border hover:scale-[1.03] transition-all duration-200"
+                    style={{ borderColor: 'var(--border-primary)' }}
+                    onClick={() => setSelectedImageForLightbox(photo)}
+                    title="Clique para ampliar esta foto da hospedagem"
+                  >
+                    <img src={photo} alt={`Hospedagem ${idx + 1}`} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-bold gap-1">
+                      <span>🔍 Expandir</span>
+                      <span className="text-[9px] text-slate-200 font-normal">Foto {idx + 1} de {trip.accommodation!.photos!.length}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -368,11 +380,11 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
 
             {memories.length === 0 ? (
               <div
-                className="flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed cursor-pointer"
+                className="flex flex-col items-center justify-center py-10 rounded-2xl border-2 border-dashed cursor-pointer hover:border-pink-500/50 transition-colors"
                 style={{ borderColor: 'var(--border-secondary)' }}
                 onClick={() => memoryInputRef.current?.click()}
               >
-                <Camera className="w-10 h-10 mb-3" style={{ color: 'var(--text-muted)' }} />
+                <Camera className="w-10 h-10 mb-3 text-pink-400/80" />
                 <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Adicione fotos desta viagem</p>
                 <p className="text-xs mt-1" style={labelStyle}>Clique para selecionar fotos do seu dispositivo</p>
               </div>
@@ -381,31 +393,34 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                 {memories.map(memory => (
                   <div
                     key={memory.id}
-                    className="relative rounded-2xl overflow-hidden group cursor-pointer"
-                    onClick={() => setSelectedMemory(memory)}
+                    className="relative rounded-2xl overflow-hidden group cursor-pointer border"
+                    style={{ borderColor: 'var(--border-primary)' }}
+                    onClick={() => setSelectedImageForLightbox(memory.imageBase64)}
                   >
-                    <img src={memory.imageBase64} alt={memory.caption || 'Lembrança'} className="w-full h-36 object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        {memory.caption && <p className="text-[11px] text-white truncate">{memory.caption}</p>}
-                        <p className="text-[10px] text-white/60">{new Date(memory.addedAt).toLocaleDateString('pt-BR')}</p>
+                    <img src={memory.imageBase64} alt={memory.caption || 'Lembrança'} className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                        {memory.caption && <p className="text-[11px] text-white font-medium truncate">{memory.caption}</p>}
+                        <p className="text-[10px] text-slate-300 mt-0.5">{new Date(memory.addedAt).toLocaleDateString('pt-BR')}</p>
                       </div>
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); handleRemoveMemory(memory.id); }}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-rose-600"
+                      className="absolute top-2 right-2 p-1.5 rounded-xl bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-rose-600 border border-white/20"
+                      title="Excluir lembrança"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
                 {/* Botão adicionar mais */}
                 <div
-                  className="rounded-2xl border-2 border-dashed flex items-center justify-center h-36 cursor-pointer hover:opacity-70 transition-opacity"
+                  className="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center h-36 cursor-pointer hover:border-pink-500/50 transition-colors"
                   style={{ borderColor: 'var(--border-secondary)' }}
                   onClick={() => memoryInputRef.current?.click()}
                 >
-                  <Plus className="w-8 h-8" style={{ color: 'var(--text-muted)' }} />
+                  <Plus className="w-6 h-6 mb-1 text-pink-400" />
+                  <span className="text-[10px] font-semibold text-slate-400">Nova Foto</span>
                 </div>
               </div>
             )}
@@ -414,23 +429,25 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
         </div>
       </div>
 
-      {/* Lightbox de Lembrança */}
-      {selectedMemory && (
+      {/* Lightbox Modal de Imagens (Hospedagem, Lembranças, Capa) */}
+      {selectedImageForLightbox && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4"
-          onClick={() => setSelectedMemory(null)}
+          className="fixed inset-0 z-[65] flex items-center justify-center bg-black/92 backdrop-blur-md p-4 animate-fadeIn"
+          onClick={() => setSelectedImageForLightbox(null)}
         >
-          <div className="relative max-w-3xl w-full" onClick={e => e.stopPropagation()}>
-            <img src={selectedMemory.imageBase64} alt={selectedMemory.caption || ''} className="w-full max-h-[80vh] object-contain rounded-2xl" />
+          <div className="relative max-w-4xl w-full flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+            <img
+              src={selectedImageForLightbox}
+              alt="Foto Ampliada"
+              className="w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+            />
             <button
-              onClick={() => setSelectedMemory(null)}
-              className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white cursor-pointer hover:bg-black"
+              onClick={() => setSelectedImageForLightbox(null)}
+              className="absolute top-3 right-3 p-2.5 rounded-full bg-black/80 text-white cursor-pointer hover:bg-black hover:scale-110 transition-all border border-white/20 shadow-xl"
+              title="Fechar (Esc)"
             >
               <X className="w-5 h-5" />
             </button>
-            {selectedMemory.caption && (
-              <p className="text-center text-sm text-white/80 mt-3">{selectedMemory.caption}</p>
-            )}
           </div>
         </div>
       )}

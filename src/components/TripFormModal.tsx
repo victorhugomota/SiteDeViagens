@@ -133,6 +133,7 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   const [pricePerNight, setPricePerNight] = useState<number>(150);
   const [accommodationUrl, setAccommodationUrl] = useState('');
   const [accommodationPhotos, setAccommodationPhotos] = useState<string[]>([]);
+  const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
 
   // Imagem de Capa
   const [coverImageBase64, setCoverImageBase64] = useState<string>('');
@@ -793,10 +794,23 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
               {accommodationPhotos.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {accommodationPhotos.map((photo, idx) => (
-                    <div key={idx} className="relative rounded-xl overflow-hidden h-24 group">
-                      <img src={photo} alt={`Hospedagem ${idx + 1}`} className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setAccommodationPhotos(prev => prev.filter((_, i) => i !== idx))}
-                        className="absolute top-1.5 right-1.5 p-1 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <div
+                      key={idx}
+                      className="relative rounded-xl overflow-hidden h-24 group cursor-pointer border hover:scale-[1.02] transition-all"
+                      style={{ borderColor: 'var(--border-primary)' }}
+                      onClick={() => setPreviewPhotoUrl(photo)}
+                      title="Clique para ampliar esta foto"
+                    >
+                      <img src={photo} alt={`Hospedagem ${idx + 1}`} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                        🔍 Ampliar
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setAccommodationPhotos(prev => prev.filter((_, i) => i !== idx)); }}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-lg bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-rose-600 border border-white/20"
+                        title="Remover foto"
+                      >
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
@@ -1096,6 +1110,30 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
 
         </form>
       </div>
+
+      {/* Modal Lightbox para Ampliação de Fotos da Hospedagem */}
+      {previewPhotoUrl && (
+        <div
+          className="fixed inset-0 z-[65] flex items-center justify-center bg-black/92 backdrop-blur-md p-4 animate-fadeIn"
+          onClick={() => setPreviewPhotoUrl(null)}
+        >
+          <div className="relative max-w-4xl w-full flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+            <img
+              src={previewPhotoUrl}
+              alt="Foto da Hospedagem Ampliada"
+              className="w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+            />
+            <button
+              type="button"
+              onClick={() => setPreviewPhotoUrl(null)}
+              className="absolute top-3 right-3 p-2.5 rounded-full bg-black/80 text-white cursor-pointer hover:bg-black hover:scale-110 transition-all border border-white/20 shadow-xl"
+              title="Fechar (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
