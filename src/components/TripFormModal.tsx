@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   X, MapPin, Calendar, Hotel, Fuel, Ticket, Plus, Trash2, Calculator,
   Sparkles, Navigation, RotateCcw, Info, Car, AlertCircle, Image, Link,
-  Coffee, Upload
+  Coffee, Upload, Route, HelpCircle
 } from 'lucide-react';
 import type { Trip, TripFormData, ExpenseItem, CarRentalInfo } from '../types/trip';
 import {
@@ -145,6 +145,7 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
   const [fuelEfficiencyKmL, setFuelEfficiencyKmL] = useState<number>(10);
   const isRoundTrip = true;
   const [tollCost, setTollCost] = useState<number>(45);
+  const [showTollInfo, setShowTollInfo] = useState<boolean>(false);
 
   // Aluguel de Carro
   const [carRentalEnabled, setCarRentalEnabled] = useState<boolean>(false);
@@ -573,7 +574,7 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
           {/* ORIGEM + DESTINO */}
           <div className="rounded-2xl border p-4 space-y-3" style={sectionStyle}>
             <h4 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-2" style={labelStyle}>
-              <Navigation className="w-4 h-4" style={{ color: 'var(--accent)' }} /> Rota da Viagem
+              <Route className="w-4 h-4 text-cyan-400" /> Rota da Viagem
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -849,10 +850,37 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
                   className="w-full border rounded-xl px-3 py-2 text-sm outline-none" style={inputStyle} />
               </div>
               <div>
-                <label className="block text-xs mb-1" style={labelStyle}>Pedágios (R$)</label>
+                <div className="flex items-center gap-1 mb-1">
+                  <label className="text-xs" style={labelStyle}>Pedágios (R$)</label>
+                  <div className="relative group cursor-pointer">
+                    <button
+                      type="button"
+                      onClick={() => setShowTollInfo(!showTollInfo)}
+                      className="text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer flex items-center justify-center p-0.5"
+                      title="Como esse valor foi calculado?"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5" />
+                    </button>
+                    
+                    {/* Tooltip / Popover Explicativo */}
+                    <div className={`absolute right-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 ${showTollInfo ? 'block' : 'hidden group-hover:block'} w-64 p-3 rounded-2xl border shadow-2xl z-50 text-[11px] leading-snug animate-fadeIn`}
+                      style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-secondary)', color: 'var(--text-primary)' }}
+                    >
+                      <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1">
+                        <HelpCircle className="w-3.5 h-3.5 shrink-0" /> Origem do Valor dos Pedágios
+                      </div>
+                      <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                        Valor calculado automaticamente para <strong>Ida e Volta ({distanceKm * 2} km total)</strong> com base nas tarifas médias oficiais das praças de pedágio rodoviárias (ANTT/ARTESP) estimadas para esta rota.
+                      </p>
+                      <span className="block mt-1.5 text-[9px] italic" style={{ color: 'var(--text-muted)' }}>
+                        💡 Você pode alterar ou zerar este valor manualmente.
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 <input type="number" step="0.01" min="0" value={tollCost}
                   onChange={(e) => setTollCost(parseFloat(e.target.value) || 0)}
-                  className="w-full border rounded-xl px-3 py-2 text-sm outline-none" style={inputStyle} />
+                  className="w-full border rounded-xl px-3 py-2 text-sm outline-none font-semibold" style={inputStyle} />
               </div>
             </div>
 
