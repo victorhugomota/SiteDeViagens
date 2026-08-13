@@ -28,8 +28,8 @@ Error generating stack: `+e.message+`
 
         body {
           font-family: 'Inter', system-ui, sans-serif;
-          color: #f1f5f9;
-          background: #020817;
+          color: #0f172a;
+          background: #ffffff;
           padding: 28px;
           font-size: 12px;
           line-height: 1.45;
@@ -47,25 +47,25 @@ Error generating stack: `+e.message+`
         .header-title h1 {
           font-size: 22px;
           font-weight: 900;
-          color: #ffffff;
+          color: #0f172a;
           letter-spacing: -0.02em;
         }
 
         .header-title p {
           font-size: 11px;
-          color: #94a3b8;
+          color: #64748b;
           font-weight: 500;
         }
 
         .doc-meta {
           text-align: right;
           font-size: 11px;
-          color: #94a3b8;
+          color: #64748b;
         }
 
         .trip-banner {
-          background: #0f172a;
-          border: 1px solid #1e293b;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
           border-radius: 14px;
           padding: 16px;
           margin-bottom: 20px;
@@ -74,13 +74,13 @@ Error generating stack: `+e.message+`
         .trip-title {
           font-size: 20px;
           font-weight: 800;
-          color: #ffffff;
+          color: #020817;
           margin-bottom: 6px;
         }
 
         .trip-route {
           font-size: 12px;
-          color: #cbd5e1;
+          color: #334155;
           margin-bottom: 12px;
           display: flex;
           flex-wrap: wrap;
@@ -101,8 +101,8 @@ Error generating stack: `+e.message+`
         }
 
         .summary-card {
-          background: #1e293b;
-          border: 1px solid #334155;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
           border-radius: 10px;
           padding: 10px;
         }
@@ -111,7 +111,7 @@ Error generating stack: `+e.message+`
           font-size: 9px;
           font-weight: 700;
           text-transform: uppercase;
-          color: #94a3b8;
+          color: #64748b;
           display: block;
           margin-bottom: 3px;
         }
@@ -119,13 +119,13 @@ Error generating stack: `+e.message+`
         .summary-card value {
           font-size: 14px;
           font-weight: 800;
-          color: #ffffff;
+          color: #0f172a;
           display: block;
         }
 
         .summary-card sub {
           font-size: 9px;
-          color: #64748b;
+          color: #94a3b8;
         }
 
         .section-title {
@@ -133,11 +133,11 @@ Error generating stack: `+e.message+`
           font-weight: 800;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          color: #22d3ee;
+          color: #0f172a;
           margin-top: 20px;
           margin-bottom: 10px;
           padding-bottom: 5px;
-          border-bottom: 2px solid #1e293b;
+          border-bottom: 2px solid #06b6d4;
         }
 
         table {
@@ -149,35 +149,34 @@ Error generating stack: `+e.message+`
         }
 
         th {
-          background: #1e293b;
+          background: #f1f5f9;
           text-align: left;
           padding: 10px 12px;
           font-size: 10px;
           font-weight: 700;
           text-transform: uppercase;
-          color: #94a3b8;
-          border-bottom: 1px solid #334155;
+          color: #475569;
+          border-bottom: 1px solid #cbd5e1;
         }
 
         td {
           padding: 10px 12px;
-          border-bottom: 1px solid #1e293b;
+          border-bottom: 1px solid #e2e8f0;
           font-size: 11px;
-          color: #f1f5f9;
+          color: #0f172a;
         }
 
         tr:nth-child(even) td {
-          background: #0f172a;
+          background: #f8fafc;
         }
 
         tr:nth-child(odd) td {
-          background: #090d16;
+          background: #ffffff;
         }
 
         .total-box {
-          background: #090d16;
+          background: #020817;
           color: #ffffff;
-          border: 2px solid #16a34a;
           border-radius: 14px;
           padding: 16px 20px;
           display: flex;
@@ -185,7 +184,6 @@ Error generating stack: `+e.message+`
           justify-content: space-between;
           margin-top: 20px;
           margin-bottom: 24px;
-          box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15);
         }
 
         .total-box label {
@@ -210,8 +208,8 @@ Error generating stack: `+e.message+`
         }
 
         .rec-box {
-          background: #0f172a;
-          border: 1px solid #1e293b;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
           border-radius: 12px;
           padding: 12px;
         }
@@ -220,10 +218,10 @@ Error generating stack: `+e.message+`
           font-size: 11px;
           font-weight: 800;
           text-transform: uppercase;
-          color: #ffffff;
+          color: #0f172a;
           margin-bottom: 8px;
           padding-bottom: 4px;
-          border-bottom: 1px solid #1e293b;
+          border-bottom: 1px solid #e2e8f0;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -234,9 +232,8 @@ Error generating stack: `+e.message+`
           align-items: center;
           justify-content: space-between;
           padding: 6px 0;
-          border-bottom: 1px solid #1e293b;
+          border-bottom: 1px solid #cbd5e1;
           font-size: 10px;
-          transition: background 0.2s;
         }
 
         .rec-item:last-child {
@@ -253,33 +250,33 @@ Error generating stack: `+e.message+`
         }
 
         .rec-link:hover {
-          color: #22d3ee;
+          color: #0891b2;
         }
 
         #pdf-local-map, #pdf-map {
           height: 360px;
           width: 100%;
           border-radius: 14px;
-          border: 1px solid #334155;
+          border: 1px solid #cbd5e1;
           margin-top: 10px;
           margin-bottom: 20px;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .footer {
           margin-top: 24px;
           text-align: center;
           font-size: 10px;
-          color: #64748b;
-          border-top: 1px dashed #334155;
+          color: #94a3b8;
+          border-top: 1px dashed #cbd5e1;
           padding-top: 12px;
         }
 
         @media print {
           body {
             padding: 12px;
-            background: #020817 !important;
-            color: #f1f5f9 !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
           }
           .no-print { display: none; }
           .page-break { page-break-before: always; }
@@ -289,7 +286,7 @@ Error generating stack: `+e.message+`
     <body>
       
       <div class="no-print" style="margin-bottom: 16px; text-align: right;">
-        <button onclick="window.print()" style="background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border: none; padding: 10px 22px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 12px; shadow: 0 4px 12px rgba(6,182,212,0.3);">
+        <button onclick="window.print()" style="background: #06b6d4; color: white; border: none; padding: 10px 22px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 12px;">
           🖨️ Imprimir / Salvar em PDF
         </button>
       </div>
@@ -355,26 +352,26 @@ Error generating stack: `+e.message+`
             <td><strong>Hospedagem</strong></td>
             <td>${e.accommodation?.name||`Não informada`}</td>
             <td>${t} diárias (${Re(e.accommodation?.pricePerNight||0)}/noite)</td>
-            <td><strong style="color: #22d3ee;">${Re(e.accommodation?.totalCost||0)}</strong></td>
+            <td><strong style="color: #0891b2;">${Re(e.accommodation?.totalCost||0)}</strong></td>
           </tr>
           <tr>
             <td><strong>Combustível</strong></td>
             <td>Consumo estimado (${e.transport?.fuelEfficiencyKmL||10} km/L)</td>
             <td>${n} km (Ida e Volta) a ${Re(e.transport?.fuelPricePerLiter||0)}/L</td>
-            <td><strong style="color: #22d3ee;">${Re(e.transport?.calculatedFuelCost||0)}</strong></td>
+            <td><strong style="color: #0891b2;">${Re(e.transport?.calculatedFuelCost||0)}</strong></td>
           </tr>
           <tr>
             <td><strong>Pedágios</strong></td>
             <td>Praças de pedágio na rota</td>
             <td>Estimado para Ida e Volta</td>
-            <td><strong style="color: #22d3ee;">${Re(e.transport?.tollCost||0)}</strong></td>
+            <td><strong style="color: #0891b2;">${Re(e.transport?.tollCost||0)}</strong></td>
           </tr>
           ${e.carRental?.enabled?`
           <tr>
             <td><strong>Aluguel de Carro</strong></td>
             <td>Locação de veículo</td>
             <td>${e.carRental.daysCount} diárias (${Re(e.carRental.pricePerDay)}/dia) ${e.carRental.hasSundayExtraDay?`(Regra do Domingo inclusa)`:``}</td>
-            <td><strong style="color: #22d3ee;">${Re(e.carRental.totalCost)}</strong></td>
+            <td><strong style="color: #0891b2;">${Re(e.carRental.totalCost)}</strong></td>
           </tr>
           `:``}
         </tbody>
@@ -396,7 +393,7 @@ Error generating stack: `+e.message+`
             <tr>
               <td style="width: 30px;">${t+1}</td>
               <td>${e.description}</td>
-              <td style="text-align: right;"><strong style="color: #22d3ee;">${Re(e.value)}</strong></td>
+              <td style="text-align: right;"><strong style="color: #0891b2;">${Re(e.value)}</strong></td>
             </tr>
           `).join(``)}
         </tbody>
@@ -406,14 +403,14 @@ Error generating stack: `+e.message+`
       <!-- Observações -->
       ${e.notes?`
       <div class="section-title">Observações</div>
-      <p style="background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #1e293b; margin-bottom: 16px; color: #cbd5e1;">${e.notes}</p>
+      <p style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px; color: #334155;">${e.notes}</p>
       `:``}
 
       <!-- Caixa do Orçamento Geral -->
       <div class="total-box">
         <div>
           <label>Orçamento Geral Estimado</label>
-          <span style="font-size: 10px; color: #94a3b8;">Todos os custos calculados para a viagem</span>
+          <span style="font-size: 10px; color: #cbd5e1;">Todos os custos calculados para a viagem</span>
         </div>
         <div class="price">${Re(e.totalEstimateCost||0)}</div>
       </div>
@@ -421,19 +418,19 @@ Error generating stack: `+e.message+`
       <!-- SEÇÃO: RECOMENDAÇÕES LOCAIS + MAPA DE ZOOM NO DESTINO -->
       <div class="page-break">
         <div class="section-title">📍 Recomendações Locais Próximas ao Destino (Clique para Abrir no Google)</div>
-        <p style="font-size: 11px; color: #94a3b8; margin-bottom: 12px;">
-          Opções sugeridas na região de <strong>${e.destinationAddress}</strong>. Clique em qualquer local para pesquisar detalhes e ver avaliações no Google:
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 12px;">
+          Opções sugeridas na região de <strong>${e.destinationAddress}</strong>. Clique em qualquer local para pesquisar detalhes no Google:
         </p>
 
         <div class="rec-grid">
           <!-- Restaurantes -->
           <div class="rec-box">
-            <h4><span>🍽️ Alimentação & Restaurantes</span> <span style="color:#f43f5e; font-size:10px;">(5 opções)</span></h4>
+            <h4><span>🍽️ Alimentação & Restaurantes</span> <span style="color:#e11d48; font-size:10px;">(5 opções)</span></h4>
             ${l.map(e=>`
               <div class="rec-item">
                 <a href="${p(e.name,e.address)}" target="_blank" rel="noopener noreferrer" class="rec-link" title="Abrir ${e.name} no Google">
-                  <div><strong style="color:#22d3ee;">${e.name} ↗</strong><br><span style="color:#94a3b8;">${e.distance} • ${e.address}</span></div>
-                  <span style="font-weight:bold; color:#f43f5e; margin-left: 6px;">★ ${e.rating}</span>
+                  <div><strong style="color:#0891b2;">${e.name} ↗</strong><br><span style="color:#64748b;">${e.distance} • ${e.address}</span></div>
+                  <span style="font-weight:bold; color:#e11d48; margin-left: 6px;">★ ${e.rating}</span>
                 </a>
               </div>
             `).join(``)}
@@ -441,12 +438,12 @@ Error generating stack: `+e.message+`
 
           <!-- Cafés -->
           <div class="rec-box">
-            <h4><span>☕ Cafés & Confeitarias</span> <span style="color:#f59e0b; font-size:10px;">(5 opções)</span></h4>
+            <h4><span>☕ Cafés & Confeitarias</span> <span style="color:#d97706; font-size:10px;">(5 opções)</span></h4>
             ${u.map(e=>`
               <div class="rec-item">
                 <a href="${p(e.name,e.address)}" target="_blank" rel="noopener noreferrer" class="rec-link" title="Abrir ${e.name} no Google">
-                  <div><strong style="color:#22d3ee;">${e.name} ↗</strong><br><span style="color:#94a3b8;">${e.distance} • ${e.address}</span></div>
-                  <span style="font-weight:bold; color:#f59e0b; margin-left: 6px;">★ ${e.rating}</span>
+                  <div><strong style="color:#0891b2;">${e.name} ↗</strong><br><span style="color:#64748b;">${e.distance} • ${e.address}</span></div>
+                  <span style="font-weight:bold; color:#d97706; margin-left: 6px;">★ ${e.rating}</span>
                 </a>
               </div>
             `).join(``)}
@@ -454,12 +451,12 @@ Error generating stack: `+e.message+`
 
           <!-- Hotéis -->
           <div class="rec-box">
-            <h4><span>🏨 Hotéis & Pousadas</span> <span style="color:#818cf8; font-size:10px;">(5 opções)</span></h4>
+            <h4><span>🏨 Hotéis & Pousadas</span> <span style="color:#4f46e5; font-size:10px;">(5 opções)</span></h4>
             ${d.map(e=>`
               <div class="rec-item">
                 <a href="${p(e.name,e.address)}" target="_blank" rel="noopener noreferrer" class="rec-link" title="Abrir ${e.name} no Google">
-                  <div><strong style="color:#22d3ee;">${e.name} ↗</strong><br><span style="color:#94a3b8;">${e.distance} • ${e.address}</span></div>
-                  <span style="font-weight:bold; color:#818cf8; margin-left: 6px;">★ ${e.rating}</span>
+                  <div><strong style="color:#0891b2;">${e.name} ↗</strong><br><span style="color:#64748b;">${e.distance} • ${e.address}</span></div>
+                  <span style="font-weight:bold; color:#4f46e5; margin-left: 6px;">★ ${e.rating}</span>
                 </a>
               </div>
             `).join(``)}
@@ -467,19 +464,19 @@ Error generating stack: `+e.message+`
 
           <!-- Lazer / Atrações -->
           <div class="rec-box">
-            <h4><span>🎡 Lazer & Atrações</span> <span style="color:#06b6d4; font-size:10px;">(5 opções)</span></h4>
+            <h4><span>🎡 Lazer & Atrações</span> <span style="color:#0891b2; font-size:10px;">(5 opções)</span></h4>
             ${f.map(e=>`
               <div class="rec-item">
                 <a href="${p(e.name,e.address)}" target="_blank" rel="noopener noreferrer" class="rec-link" title="Abrir ${e.name} no Google">
-                  <div><strong style="color:#22d3ee;">${e.name} ↗</strong><br><span style="color:#94a3b8;">${e.distance} • ${e.address}</span></div>
-                  <span style="font-weight:bold; color:#06b6d4; margin-left: 6px;">★ ${e.rating}</span>
+                  <div><strong style="color:#0891b2;">${e.name} ↗</strong><br><span style="color:#64748b;">${e.distance} • ${e.address}</span></div>
+                  <span style="font-weight:bold; color:#0891b2; margin-left: 6px;">★ ${e.rating}</span>
                 </a>
               </div>
             `).join(``)}
           </div>
         </div>
 
-        <div style="font-weight:bold; font-size:11px; margin-top:10px; color:#cbd5e1;">
+        <div style="font-weight:bold; font-size:11px; margin-top:10px; color:#334155;">
           Mapa Zoom no Destino com as Recomendações Marcadas:
         </div>
         <div id="pdf-local-map"></div>
@@ -488,7 +485,7 @@ Error generating stack: `+e.message+`
       <!-- SEÇÃO: MAPA DA ROTA REAL ESTRADA (ÚLTIMA PÁGINA) -->
       <div class="page-break">
         <div class="section-title">🗺️ Mapa e Rota Real da Viagem (Estradas)</div>
-        <p style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
+        <p style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
           Percurso rodoviário completo entre <strong>${e.originAddress}</strong> e <strong>${e.destinationAddress}</strong>.
         </p>
         <div id="pdf-map"></div>
@@ -514,18 +511,18 @@ Error generating stack: `+e.message+`
             }).addTo(localMap);
 
             const categoryColors = {
-              restaurant: '#f43f5e',
-              cafe: '#f59e0b',
-              hotel: '#818cf8',
-              attraction: '#06b6d4'
+              restaurant: '#e11d48',
+              cafe: '#d97706',
+              hotel: '#4f46e5',
+              attraction: '#0891b2'
             };
 
             const localBounds = [];
             places.forEach(p => {
               localBounds.push([p.lat, p.lng]);
               L.circleMarker([p.lat, p.lng], {
-                color: categoryColors[p.category] || '#06b6d4',
-                fillColor: categoryColors[p.category] || '#06b6d4',
+                color: categoryColors[p.category] || '#0891b2',
+                fillColor: categoryColors[p.category] || '#0891b2',
                 fillOpacity: 1,
                 radius: 7
               }).addTo(localMap).bindPopup('<b>' + p.name + '</b><br>' + p.distance + ' • ★ ' + p.rating);
@@ -542,11 +539,11 @@ Error generating stack: `+e.message+`
             }).addTo(fullMap);
 
             L.circleMarker([originLat, originLng], {
-              color: '#06b6d4', fillColor: '#06b6d4', fillOpacity: 1, radius: 8
+              color: '#0891b2', fillColor: '#0891b2', fillOpacity: 1, radius: 8
             }).addTo(fullMap).bindPopup('<b>Partida:</b> ${e.originAddress.replace(/'/g,`\\'`)}');
 
             L.circleMarker([destLat, destLng], {
-              color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 1, radius: 8
+              color: '#e11d48', fillColor: '#e11d48', fillOpacity: 1, radius: 8
             }).addTo(fullMap).bindPopup('<b>Destino:</b> ${e.destinationAddress.replace(/'/g,`\\'`)}');
 
             fetch('https://router.project-osrm.org/route/v1/driving/' + originLng + ',' + originLat + ';' + destLng + ',' + destLat + '?overview=full&geometries=geojson')
@@ -554,16 +551,16 @@ Error generating stack: `+e.message+`
               .then(data => {
                 if (data.routes && data.routes[0] && data.routes[0].geometry) {
                   const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-                  const poly = L.polyline(coords, { color: '#06b6d4', weight: 5, opacity: 0.85 }).addTo(fullMap);
+                  const poly = L.polyline(coords, { color: '#0891b2', weight: 5, opacity: 0.85 }).addTo(fullMap);
                   fullMap.fitBounds(poly.getBounds(), { padding: [30, 30] });
                 } else {
-                  const poly = L.polyline([[originLat, originLng], [destLat, destLng]], { color: '#06b6d4', weight: 4, dashArray: '6, 6' }).addTo(fullMap);
+                  const poly = L.polyline([[originLat, originLng], [destLat, destLng]], { color: '#0891b2', weight: 4, dashArray: '6, 6' }).addTo(fullMap);
                   fullMap.fitBounds(poly.getBounds(), { padding: [30, 30] });
                 }
                 setTimeout(function() { window.print(); }, 900);
               })
               .catch(() => {
-                const poly = L.polyline([[originLat, originLng], [destLat, destLng]], { color: '#06b6d4', weight: 4 }).addTo(fullMap);
+                const poly = L.polyline([[originLat, originLng], [destLat, destLng]], { color: '#0891b2', weight: 4 }).addTo(fullMap);
                 fullMap.fitBounds(poly.getBounds(), { padding: [30, 30] });
                 setTimeout(function() { window.print(); }, 900);
               });
