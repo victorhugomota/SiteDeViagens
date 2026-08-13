@@ -3,116 +3,55 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ============================
-   CSS VARIABLES — TEMA SISTEMA
+   CSS VARIABLES — MODO ESCURO (DEFAULT)
    ============================ */
 :root {
-  --accent: #06b6d4;         /* ciano (padrão) */
+  --accent: #06b6d4;         /* ciano */
   --accent-light: #22d3ee;
   --accent-dark: #0891b2;
-  --accent-bg: rgba(6,182,212,0.1);
+  --accent-bg: rgba(6,182,212,0.12);
   --accent-border: rgba(6,182,212,0.3);
 
   --bg-primary: #020817;
+  --bg-gradient: linear-gradient(135deg, #020817 0%, #0b1329 50%, #020817 100%);
   --bg-secondary: #0f172a;
-  --bg-card: #1e293b;
+  --bg-card: #ffffff;
   --bg-input: #0f172a;
   --bg-hover: #1e293b;
 
   --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
+  --text-secondary: #cbd5e1;
   --text-muted: #64748b;
 
   --border-primary: #1e293b;
   --border-secondary: #334155;
 
-  --shadow-accent: rgba(6,182,212,0.2);
+  --shadow-accent: rgba(6,182,212,0.25);
 }
 
-/* TEMA CLARO */
+/* ============================
+   MODO CLARO (LIGHT MODE)
+   ============================ */
 [data-theme="light"] {
-  --bg-primary: #f0f4f8;
+  --accent: #06b6d4;
+  --accent-light: #0891b2;
+  --accent-dark: #0e7490;
+  --accent-bg: rgba(6,182,212,0.1);
+  --accent-border: rgba(6,182,212,0.4);
+
+  --bg-primary: #e2e8f0;
+  --bg-gradient: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 50%, #e2e8f0 100%);
   --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --bg-input: #f8fafc;
-  --bg-hover: #f1f5f9;
+  --bg-input: #f1f5f9;
+  --bg-hover: #e2e8f0;
 
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
 
-  --border-primary: #e2e8f0;
-  --border-secondary: #cbd5e1;
-}
-
-/* PALETAS DE CORES DE DESTAQUE */
-[data-accent="cyan"]   { --accent: #06b6d4; --accent-light: #22d3ee; --accent-dark: #0891b2; --accent-bg: rgba(6,182,212,0.1);  --accent-border: rgba(6,182,212,0.3);  --shadow-accent: rgba(6,182,212,0.2); }
-[data-accent="purple"] { --accent: #a855f7; --accent-light: #c084fc; --accent-dark: #9333ea; --accent-bg: rgba(168,85,247,0.1); --accent-border: rgba(168,85,247,0.3); --shadow-accent: rgba(168,85,247,0.2); }
-[data-accent="green"]  { --accent: #22c55e; --accent-light: #4ade80; --accent-dark: #16a34a; --accent-bg: rgba(34,197,94,0.1);  --accent-border: rgba(34,197,94,0.3);  --shadow-accent: rgba(34,197,94,0.2); }
-[data-accent="orange"] { --accent: #f97316; --accent-light: #fb923c; --accent-dark: #ea580c; --accent-bg: rgba(249,115,22,0.1); --accent-border: rgba(249,115,22,0.3); --shadow-accent: rgba(249,115,22,0.2); }
-[data-accent="pink"]   { --accent: #ec4899; --accent-light: #f472b6; --accent-dark: #db2777; --accent-bg: rgba(236,72,153,0.1); --accent-border: rgba(236,72,153,0.3); --shadow-accent: rgba(236,72,153,0.2); }
-[data-accent="blue"]   { --accent: #3b82f6; --accent-light: #60a5fa; --accent-dark: #2563eb; --accent-bg: rgba(59,130,246,0.1); --accent-border: rgba(59,130,246,0.3); --shadow-accent: rgba(59,130,246,0.2); }
-[data-accent="amber"]  { --accent: #eab308; --accent-light: #fde047; --accent-dark: #ca8a04; --accent-bg: rgba(234,179,8,0.1);  --accent-border: rgba(234,179,8,0.3);  --shadow-accent: rgba(234,179,8,0.2); }
-[data-accent="red"]    { --accent: #ef4444; --accent-light: #fca5a5; --accent-dark: #dc2626; --accent-bg: rgba(239,68,68,0.1);  --accent-border: rgba(239,68,68,0.3);  --shadow-accent: rgba(239,68,68,0.2); }
-
-/* ESTILOS DE CARDS */
-[data-card="card-obsidian"]   { --bg-card: #0f172a; }
-[data-card="card-purple"]     { --bg-card: #1e1b4b; }
-[data-card="card-emerald"]    { --bg-card: #064e3b; }
-[data-card="card-charcoal"]   { --bg-card: #18181b; }
-[data-card="card-slate-light"] { --bg-card: #f8fafc; }
-[data-card="card-cream"]       { --bg-card: #fffbe6; }
-
-/* ESTILOS DE CABEÇALHO */
-[data-header="header-solid-dark"]  { --header-bg: #090d16; }
-[data-header="header-indigo"]      { --header-bg: #1e1b4b; }
-[data-header="header-teal"]        { --header-bg: #042f2e; }
-[data-header="header-solid-light"] { --header-bg: #ffffff; }
-[data-header="header-sky"]         { --header-bg: #e0f2fe; }
-
-/* DEGRADÊS DE FUNDO */
-:root {
-  --bg-gradient: linear-gradient(135deg, #020817 0%, #0f172a 50%, #020817 100%);
-}
-
-[data-bg="gradient-default"] {
-  --bg-gradient: linear-gradient(135deg, #020817 0%, #0f172a 50%, #020817 100%);
-  --bg-primary: #020817;
-}
-
-[data-bg="gradient-aurora"] {
-  --bg-gradient: linear-gradient(135deg, #05141c 0%, #0f2238 50%, #160c29 100%);
-  --bg-primary: #05141c;
-}
-
-[data-bg="gradient-sunset"] {
-  --bg-gradient: linear-gradient(135deg, #1c0812 0%, #2a0e1a 50%, #090e1a 100%);
-  --bg-primary: #1c0812;
-}
-
-[data-bg="gradient-emerald"] {
-  --bg-gradient: linear-gradient(135deg, #031811 0%, #08281d 50%, #030d1a 100%);
-  --bg-primary: #031811;
-}
-
-[data-bg="gradient-royal"] {
-  --bg-gradient: linear-gradient(135deg, #0c081e 0%, #190e38 50%, #050c1e 100%);
-  --bg-primary: #0c081e;
-}
-
-/* DEGRADÊS PARA TEMA CLARO */
-[data-theme="light"] {
-  --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #f8fafc 100%);
-  --bg-primary: #f0f4f8;
-}
-
-[data-theme="light"][data-bg="gradient-rose"] {
-  --bg-gradient: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #f1f5f9 100%);
-  --bg-primary: #fff1f2;
-}
-
-[data-theme="light"][data-bg="gradient-ocean"] {
-  --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f1f5f9 100%);
-  --bg-primary: #f0f9ff;
+  --border-primary: #cbd5e1;
+  --border-secondary: #94a3b8;
 }
 
 html {
@@ -141,18 +80,18 @@ body {
    LEAFLET DARK/LIGHT POPUPS
    =========================== */
 .leaflet-popup-content-wrapper {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-primary) !important;
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
   border-radius: 12px !important;
-  color: var(--text-primary) !important;
+  color: #f1f5f9 !important;
   box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
 }
 .leaflet-popup-tip {
-  background: var(--bg-card) !important;
+  background: #0f172a !important;
 }
 .leaflet-popup-content {
   margin: 10px 14px !important;
-  color: var(--text-primary) !important;
+  color: #f1f5f9 !important;
 }
 .leaflet-container {
   border-radius: 16px;
@@ -177,7 +116,6 @@ body {
 .animate-fadeIn { animation: fadeIn 0.2s ease; }
 .animate-slideUp { animation: slideUp 0.3s ease; }
 
-/* Skeleton loading */
 .skeleton {
   background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%);
   background-size: 200% 100%;
@@ -185,9 +123,6 @@ body {
   border-radius: 8px;
 }
 
-/* ================================
-   RESPONSIVE MOBILE IMPROVEMENTS
-   ================================ */
 @media (max-width: 640px) {
   .modal-body { padding: 1rem !important; }
   .card-grid { grid-template-columns: 1fr !important; }

@@ -5,8 +5,6 @@ import { TripList } from './components/TripList';
 import { TripCalendar } from './components/TripCalendar';
 import { TripFormModal } from './components/TripFormModal';
 import { TripDetailModal } from './components/TripDetailModal';
-import { ThemeModal, DEFAULT_THEME_SETTINGS } from './components/ThemeModal';
-import type { ThemeSettings } from './components/ThemeModal';
 import type { Trip, TripFormData } from './types/trip';
 import {
   subscribeTrips,
@@ -28,45 +26,24 @@ export function App() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedTripForDetail, setSelectedTripForDetail] = useState<Trip | null>(null);
 
-  // Estado da Personalização do Tema
-  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
-  const [themeSettings, setThemeSettings] = useState<ThemeSettings>(() => {
-    try {
-      const saved = localStorage.getItem('viajaThemeSettingsJSON');
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // ignore
-    }
-    return DEFAULT_THEME_SETTINGS;
+  // Estado simples de Modo Escuro / Modo Claro
+  const [themeMode, setThemeMode] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('viajaThemeMode') as 'dark' | 'light') || 'dark';
   });
 
-  // Aplica as configurações visuais ao HTML root e salva no localStorage
+  // Aplica tema ao HTML root
   useEffect(() => {
     const root = document.documentElement;
-
-    if (themeSettings.themeMode === 'light') {
+    if (themeMode === 'light') {
       root.setAttribute('data-theme', 'light');
     } else {
       root.removeAttribute('data-theme');
     }
-
-    root.setAttribute('data-accent', themeSettings.accentColor);
-    root.setAttribute('data-bg', themeSettings.bgGradient);
-    root.setAttribute('data-card', themeSettings.cardBg);
-    root.setAttribute('data-header', themeSettings.headerBg);
-
-    localStorage.setItem('viajaThemeSettingsJSON', JSON.stringify(themeSettings));
-  }, [themeSettings]);
-
-  const handleApplyThemeSettings = (newSettings: ThemeSettings) => {
-    setThemeSettings(newSettings);
-  };
+    localStorage.setItem('viajaThemeMode', themeMode);
+  }, [themeMode]);
 
   const handleToggleThemeMode = () => {
-    setThemeSettings(prev => ({
-      ...prev,
-      themeMode: prev.themeMode === 'dark' ? 'light' : 'dark'
-    }));
+    setThemeMode(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   // Escuta a coleção 'trips' no Cloud Firestore em tempo real
@@ -137,9 +114,8 @@ export function App() {
         activeView={activeView}
         setActiveView={setActiveView}
         onOpenCreateModal={handleOpenCreate}
-        onOpenThemeModal={() => setIsThemeModalOpen(true)}
         trips={trips}
-        themeSettings={themeSettings}
+        themeMode={themeMode}
         onToggleThemeMode={handleToggleThemeMode}
       />
 
@@ -185,13 +161,6 @@ export function App() {
         onDelete={handleDeleteTrip}
         onAddExtraItem={handleAddExtraItem}
         onRemoveExtraItem={handleRemoveExtraItem}
-      />
-
-      <ThemeModal
-        isOpen={isThemeModalOpen}
-        onClose={() => setIsThemeModalOpen(false)}
-        settings={themeSettings}
-        onApplySettings={handleApplyThemeSettings}
       />
 
       <footer
