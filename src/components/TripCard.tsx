@@ -1,7 +1,8 @@
 import React from 'react';
-import { Calendar, MapPin, Hotel, Fuel, Ticket, Edit3, Trash2, Navigation, Car, Camera } from 'lucide-react';
+import { Calendar, MapPin, Hotel, Fuel, Ticket, Edit3, Trash2, Navigation, Car, Camera, FileText } from 'lucide-react';
 import type { Trip } from '../types/trip';
 import { formatCurrency, formatDate, calculateNights, getDestinationImageUrl } from '../utils/formatters';
+import { exportTripToPdf } from '../utils/pdfExport';
 
 interface TripCardProps {
   trip: Trip;
@@ -59,10 +60,10 @@ export const TripCard: React.FC<TripCardProps> = ({
           </span>
         </div>
 
-        {/* Distância Ida+Volta */}
+        {/* Distância Ida e Volta */}
         <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/10 text-xs text-white flex items-center gap-1.5">
           <Navigation className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
-          <span>{(trip.transport?.distanceKm || 0) * 2} km (I+V)</span>
+          <span>{(trip.transport?.distanceKm || 0) * 2} km (Ida e Volta)</span>
         </div>
 
         {/* Fotos de Lembrança Badge */}
@@ -157,7 +158,7 @@ export const TripCard: React.FC<TripCardProps> = ({
             </span>
           </div>
 
-          {/* Botões de Ação (stopPropagation para não abrir o modal de detalhes) */}
+          {/* Botões de Ação */}
           <div className="flex items-center space-x-1.5">
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(trip); }}
@@ -166,6 +167,15 @@ export const TripCard: React.FC<TripCardProps> = ({
               style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)', color: 'var(--text-muted)' }}
             >
               <Edit3 className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); exportTripToPdf(trip); }}
+              title="Exportar para PDF / Imprimir"
+              className="p-2 rounded-lg border transition-colors cursor-pointer hover:text-emerald-400"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)', color: 'var(--text-muted)' }}
+            >
+              <FileText className="w-4 h-4" />
             </button>
 
             <button

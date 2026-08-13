@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import {
   X, MapPin, Calendar, Hotel, Fuel, Ticket, Plus, Trash2, Navigation,
-  Edit3, CheckCircle2, Car, Camera, ExternalLink, Coffee
+  Edit3, CheckCircle2, Car, Camera, ExternalLink, Coffee, FileText
 } from 'lucide-react';
 import type { Trip, TripMemory } from '../types/trip';
 import { formatCurrency, formatDate, calculateNights, getDestinationImageUrl } from '../utils/formatters';
 import { MapRoute } from './MapRoute';
 import { addMemoryToTrip, removeMemoryFromTrip } from '../services/tripService';
+import { exportTripToPdf } from '../utils/pdfExport';
 
 interface TripDetailModalProps {
   trip: Trip | null;
@@ -127,10 +128,19 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
               <button
                 onClick={() => { onClose(); onEdit(trip); }}
                 className="p-2.5 rounded-xl bg-black/60 hover:bg-blue-900/80 text-white border border-white/20 cursor-pointer transition-colors"
-                title="Editar"
+                title="Editar Viagem"
               >
                 <Edit3 className="w-4 h-4" />
               </button>
+
+              <button
+                onClick={() => exportTripToPdf(trip)}
+                className="p-2.5 rounded-xl bg-black/60 hover:bg-emerald-900/80 text-white border border-white/20 cursor-pointer transition-colors"
+                title="Exportar para PDF / Imprimir"
+              >
+                <FileText className="w-4 h-4" />
+              </button>
+
               <button
                 onClick={() => {
                   if (window.confirm(`Excluir a viagem "${trip.title || trip.destinationAddress}"?`)) {
@@ -139,7 +149,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                   }
                 }}
                 className="p-2.5 rounded-xl bg-black/60 hover:bg-rose-900/80 text-white border border-white/20 cursor-pointer transition-colors"
-                title="Excluir"
+                title="Excluir Viagem"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -206,7 +216,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             {[
               { label: 'Hospedagem', icon: <Hotel className="w-4 h-4 text-indigo-400" />, value: formatCurrency(trip.accommodation?.totalCost || 0), sub: `${nights}x ${formatCurrency(trip.accommodation?.pricePerNight || 0)}` },
-              { label: 'Combustível', icon: <Fuel className="w-4 h-4 text-amber-400" />, value: formatCurrency(trip.transport?.calculatedFuelCost || 0), sub: `${(trip.transport?.distanceKm || 0) * 2} km (I+V)` },
+              { label: 'Combustível', icon: <Fuel className="w-4 h-4 text-amber-400" />, value: formatCurrency(trip.transport?.calculatedFuelCost || 0), sub: `${(trip.transport?.distanceKm || 0) * 2} km (Ida e Volta)` },
               { label: 'Pedágios', icon: <Ticket className="w-4 h-4" style={{ color: 'var(--accent)' }} />, value: formatCurrency(trip.transport?.tollCost || 0), sub: 'Ida e Volta' },
               {
                 label: trip.carRental?.enabled ? 'Carro Alugado' : 'Aluguel Carro',

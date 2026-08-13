@@ -823,13 +823,13 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="flex items-center justify-between px-3 py-2 rounded-xl border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}>
-                <span style={labelStyle}>Combustível (I+V):</span>
+                <span style={labelStyle}>Combustível (Ida e Volta):</span>
                 <span className="font-bold text-amber-400">{formatCurrency(calculatedFuelCost)}</span>
               </div>
               <div className="flex items-center justify-between px-3 py-2 rounded-xl border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}>
-                <span style={labelStyle}>Pedágios (I+V):</span>
+                <span style={labelStyle}>Pedágios (Ida e Volta):</span>
                 <span className="font-bold" style={{ color: 'var(--accent)' }}>{formatCurrency(tollCost)}</span>
               </div>
             </div>
