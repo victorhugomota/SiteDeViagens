@@ -1,3 +1,4 @@
+@import "tailwindcss";
 @import 'leaflet/dist/leaflet.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -50,15 +51,6 @@
 [data-accent="orange"] { --accent: #f97316; --accent-light: #fb923c; --accent-dark: #ea580c; --accent-bg: rgba(249,115,22,0.1); --accent-border: rgba(249,115,22,0.3); --shadow-accent: rgba(249,115,22,0.2); }
 [data-accent="pink"]   { --accent: #ec4899; --accent-light: #f472b6; --accent-dark: #db2777; --accent-bg: rgba(236,72,153,0.1); --accent-border: rgba(236,72,153,0.3); --shadow-accent: rgba(236,72,153,0.2); }
 [data-accent="blue"]   { --accent: #3b82f6; --accent-light: #60a5fa; --accent-dark: #2563eb; --accent-bg: rgba(59,130,246,0.1); --accent-border: rgba(59,130,246,0.3); --shadow-accent: rgba(59,130,246,0.2); }
-
-/* ============
-   RESET BASE
-   ============ */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
 html {
   scroll-behavior: smooth;
