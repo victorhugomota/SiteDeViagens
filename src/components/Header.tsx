@@ -1,84 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Calendar as CalendarIcon, Grid, Plus, DollarSign, MapPin, Sun, Moon, Palette } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 import type { Trip } from '../types/trip';
+import type { ThemeSettings } from './ThemeModal';
 
 interface HeaderProps {
   activeView: 'grid' | 'calendar';
   setActiveView: (view: 'grid' | 'calendar') => void;
   onOpenCreateModal: () => void;
+  onOpenThemeModal: () => void;
   trips: Trip[];
+  themeSettings: ThemeSettings;
+  onToggleThemeMode: () => void;
 }
-
-const ACCENT_COLORS = [
-  { key: 'cyan',   label: 'Ciano',   hex: '#06b6d4' },
-  { key: 'purple', label: 'Roxo',    hex: '#a855f7' },
-  { key: 'green',  label: 'Verde',   hex: '#22c55e' },
-  { key: 'orange', label: 'Laranja', hex: '#f97316' },
-  { key: 'pink',   label: 'Rosa',    hex: '#ec4899' },
-  { key: 'blue',   label: 'Azul',    hex: '#3b82f6' },
-];
-
-const BG_GRADIENTS_DARK = [
-  { key: 'gradient-default', label: 'Padrão',    css: 'linear-gradient(135deg, #020817, #0f172a)' },
-  { key: 'gradient-aurora',  label: 'Aurora',    css: 'linear-gradient(135deg, #05141c, #160c29)' },
-  { key: 'gradient-sunset',  label: 'Crepúsculo',css: 'linear-gradient(135deg, #1c0812, #090e1a)' },
-  { key: 'gradient-emerald', label: 'Esmeralda', css: 'linear-gradient(135deg, #031811, #030d1a)' },
-  { key: 'gradient-royal',   label: 'Noite Real',css: 'linear-gradient(135deg, #0c081e, #050c1e)' },
-];
-
-const BG_GRADIENTS_LIGHT = [
-  { key: 'gradient-default', label: 'Suave',    css: 'linear-gradient(135deg, #f0f4f8, #e2e8f0)' },
-  { key: 'gradient-rose',    label: 'Rosê',     css: 'linear-gradient(135deg, #fff1f2, #ffe4e6)' },
-  { key: 'gradient-ocean',   label: 'Céu Azul', css: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)' },
-];
 
 export const Header: React.FC<HeaderProps> = ({
   activeView,
   setActiveView,
   onOpenCreateModal,
-  trips
+  onOpenThemeModal,
+  trips,
+  themeSettings,
+  onToggleThemeMode
 }) => {
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('viajaTheme') as 'dark' | 'light') || 'dark';
-  });
-  const [accent, setAccent] = useState<string>(() => {
-    return localStorage.getItem('viajaAccent') || 'cyan';
-  });
-  const [bgGradient, setBgGradient] = useState<string>(() => {
-    return localStorage.getItem('viajaBgGradient') || 'gradient-default';
-  });
-
-  const [showPalette, setShowPalette] = useState(false);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'light') {
-      root.setAttribute('data-theme', 'light');
-    } else {
-      root.removeAttribute('data-theme');
-    }
-    root.setAttribute('data-accent', accent);
-    root.setAttribute('data-bg', bgGradient);
-    localStorage.setItem('viajaTheme', theme);
-    localStorage.setItem('viajaAccent', accent);
-    localStorage.setItem('viajaBgGradient', bgGradient);
-  }, [theme, accent, bgGradient]);
-
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-
   const totalTrips = trips.length;
   const totalEstimatedBudget = trips.reduce((acc, t) => acc + (t.totalEstimateCost || 0), 0);
   const totalKm = trips.reduce((acc, t) => acc + ((t.transport?.distanceKm || 0) * 2), 0);
 
-  const bgList = theme === 'dark' ? BG_GRADIENTS_DARK : BG_GRADIENTS_LIGHT;
+  const isLight = themeSettings.themeMode === 'light';
 
   return (
     <header
-      className="sticky top-0 z-30 shadow-xl backdrop-blur-md border-b"
+      className="sticky top-0 z-30 shadow-xl backdrop-blur-md border-b transition-colors"
       style={{
-        backgroundColor: theme === 'light' ? 'rgba(255,255,255,0.92)' : 'rgba(15,23,42,0.92)',
-        borderColor: theme === 'light' ? '#e2e8f0' : '#1e293b'
+        backgroundColor: 'var(--header-bg, rgba(15,23,42,0.92))',
+        borderColor: isLight ? '#e2e8f0' : '#1e293b'
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-3">
@@ -101,87 +57,31 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="flex items-center gap-1.5">
             <button
-              onClick={toggleTheme}
+              onClick={onToggleThemeMode}
               className="p-2 rounded-xl border transition-colors cursor-pointer"
               style={{
                 backgroundColor: 'var(--bg-secondary)',
                 borderColor: 'var(--border-primary)',
                 color: 'var(--text-secondary)'
               }}
-              title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
+              title={isLight ? 'Mudar para modo escuro' : 'Mudar para modo claro'}
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {isLight ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-400" />}
             </button>
 
-            <div className="relative">
-              <button
-                onClick={() => setShowPalette(prev => !prev)}
-                className="p-2 rounded-xl border transition-colors cursor-pointer flex items-center gap-1"
-                style={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  borderColor: 'var(--border-primary)',
-                  color: 'var(--accent)'
-                }}
-                title="Personalizar Cores e Fundo"
-              >
-                <Palette className="w-4 h-4" />
-              </button>
-              
-              {showPalette && (
-                <div
-                  className="absolute right-0 top-full mt-2 p-3 rounded-2xl border shadow-2xl z-50 animate-fadeIn min-w-[220px] space-y-3"
-                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}
-                >
-                  {/* Seção 1: Cor de Destaque */}
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-                      Cor de Destaque
-                    </p>
-                    <div className="flex gap-1.5">
-                      {ACCENT_COLORS.map(color => (
-                        <button
-                          key={color.key}
-                          onClick={() => { setAccent(color.key); }}
-                          className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 cursor-pointer"
-                          style={{
-                            backgroundColor: color.hex,
-                            borderColor: accent === color.key ? '#ffffff' : 'transparent',
-                            boxShadow: accent === color.key ? `0 0 0 2px ${color.hex}` : 'none'
-                          }}
-                          title={color.label}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Seção 2: Degradê de Fundo do Site */}
-                  <div className="pt-2 border-t" style={{ borderColor: 'var(--border-primary)' }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-                      Degradê de Fundo
-                    </p>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {bgList.map(bg => (
-                        <button
-                          key={bg.key}
-                          onClick={() => { setBgGradient(bg.key); setShowPalette(false); }}
-                          className="px-2.5 py-1.5 rounded-xl border text-[10px] font-semibold text-left transition-all cursor-pointer truncate flex items-center gap-1.5"
-                          style={{
-                            background: bg.css,
-                            borderColor: bgGradient === bg.key ? 'var(--accent)' : 'var(--border-primary)',
-                            color: '#ffffff',
-                            boxShadow: bgGradient === bg.key ? '0 0 0 1px var(--accent)' : 'none'
-                          }}
-                          title={bg.label}
-                        >
-                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: 'var(--accent)' }} />
-                          <span className="truncate">{bg.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={onOpenThemeModal}
+              className="p-2.5 rounded-xl border transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderColor: 'var(--accent)',
+                color: 'var(--accent)'
+              }}
+              title="Personalizar Cores e Aparência do Sistema"
+            >
+              <Palette className="w-4 h-4" />
+              <span className="text-xs font-semibold hidden sm:inline">Personalizar Cores</span>
+            </button>
           </div>
         </div>
 

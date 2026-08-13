@@ -51,6 +51,23 @@
 [data-accent="orange"] { --accent: #f97316; --accent-light: #fb923c; --accent-dark: #ea580c; --accent-bg: rgba(249,115,22,0.1); --accent-border: rgba(249,115,22,0.3); --shadow-accent: rgba(249,115,22,0.2); }
 [data-accent="pink"]   { --accent: #ec4899; --accent-light: #f472b6; --accent-dark: #db2777; --accent-bg: rgba(236,72,153,0.1); --accent-border: rgba(236,72,153,0.3); --shadow-accent: rgba(236,72,153,0.2); }
 [data-accent="blue"]   { --accent: #3b82f6; --accent-light: #60a5fa; --accent-dark: #2563eb; --accent-bg: rgba(59,130,246,0.1); --accent-border: rgba(59,130,246,0.3); --shadow-accent: rgba(59,130,246,0.2); }
+[data-accent="amber"]  { --accent: #eab308; --accent-light: #fde047; --accent-dark: #ca8a04; --accent-bg: rgba(234,179,8,0.1);  --accent-border: rgba(234,179,8,0.3);  --shadow-accent: rgba(234,179,8,0.2); }
+[data-accent="red"]    { --accent: #ef4444; --accent-light: #fca5a5; --accent-dark: #dc2626; --accent-bg: rgba(239,68,68,0.1);  --accent-border: rgba(239,68,68,0.3);  --shadow-accent: rgba(239,68,68,0.2); }
+
+/* ESTILOS DE CARDS */
+[data-card="card-obsidian"]   { --bg-card: #0f172a; }
+[data-card="card-purple"]     { --bg-card: #1e1b4b; }
+[data-card="card-emerald"]    { --bg-card: #064e3b; }
+[data-card="card-charcoal"]   { --bg-card: #18181b; }
+[data-card="card-slate-light"] { --bg-card: #f8fafc; }
+[data-card="card-cream"]       { --bg-card: #fffbe6; }
+
+/* ESTILOS DE CABEÇALHO */
+[data-header="header-solid-dark"]  { --header-bg: #090d16; }
+[data-header="header-indigo"]      { --header-bg: #1e1b4b; }
+[data-header="header-teal"]        { --header-bg: #042f2e; }
+[data-header="header-solid-light"] { --header-bg: #ffffff; }
+[data-header="header-sky"]         { --header-bg: #e0f2fe; }
 
 /* DEGRADÊS DE FUNDO */
 :root {

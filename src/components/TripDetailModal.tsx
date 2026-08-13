@@ -127,7 +127,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => { onClose(); onEdit(trip); }}
-                className="p-2.5 rounded-xl bg-black/60 hover:bg-blue-900/80 text-white border border-white/20 cursor-pointer transition-colors"
+                className="p-2.5 rounded-xl bg-black/60 hover:bg-blue-600/80 text-white border border-white/20 hover:border-blue-400 cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 shadow-md"
                 title="Editar Viagem"
               >
                 <Edit3 className="w-4 h-4" />
@@ -135,7 +135,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
 
               <button
                 onClick={() => exportTripToPdf(trip)}
-                className="p-2.5 rounded-xl bg-black/60 hover:bg-emerald-900/80 text-white border border-white/20 cursor-pointer transition-colors"
+                className="p-2.5 rounded-xl bg-black/60 hover:bg-emerald-600/80 text-white border border-white/20 hover:border-emerald-400 cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 shadow-md"
                 title="Exportar para PDF / Imprimir"
               >
                 <FileText className="w-4 h-4" />
@@ -148,7 +148,7 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
                     onClose();
                   }
                 }}
-                className="p-2.5 rounded-xl bg-black/60 hover:bg-rose-900/80 text-white border border-white/20 cursor-pointer transition-colors"
+                className="p-2.5 rounded-xl bg-black/60 hover:bg-rose-600/80 text-white border border-white/20 hover:border-rose-400 cursor-pointer transition-all duration-200 hover:scale-110 active:scale-95 shadow-md"
                 title="Excluir Viagem"
               >
                 <Trash2 className="w-4 h-4" />

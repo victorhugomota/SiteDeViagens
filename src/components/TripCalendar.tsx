@@ -151,12 +151,12 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({ trips, onSelectTrip 
               </div>
 
               {/* Badges das Viagens do Dia */}
-              <div className="space-y-1 mt-1 overflow-y-auto max-h-[75px]">
+              <div className="space-y-1 mt-1 overflow-hidden max-h-[75px]">
                 {dayTrips.map((trip) => (
                   <div
                     key={trip.id}
                     onClick={() => onSelectTrip(trip)}
-                    className="p-1.5 rounded-xl bg-gradient-to-r from-blue-900/80 to-indigo-900/80 border border-blue-700/60 hover:border-cyan-400 text-[11px] text-white cursor-pointer shadow-md transition-all hover:scale-[1.02]"
+                    className="p-1.5 rounded-xl bg-gradient-to-r from-blue-900/80 to-indigo-900/80 border border-blue-700/60 hover:border-cyan-400 hover:brightness-125 text-[11px] text-white cursor-pointer shadow-md transition-all truncate"
                   >
                     <div className="font-semibold truncate flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-cyan-300 shrink-0" />

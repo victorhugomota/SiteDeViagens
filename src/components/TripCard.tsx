@@ -163,8 +163,8 @@ export const TripCard: React.FC<TripCardProps> = ({
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(trip); }}
               title="Editar Viagem"
-              className="p-2 rounded-lg border transition-colors cursor-pointer hover:text-blue-400"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)', color: 'var(--text-muted)' }}
+              className="p-2 rounded-xl border transition-all duration-200 cursor-pointer text-slate-400 hover:text-blue-400 hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-110 active:scale-95 shadow-sm"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)' }}
             >
               <Edit3 className="w-4 h-4" />
             </button>
@@ -172,8 +172,8 @@ export const TripCard: React.FC<TripCardProps> = ({
             <button
               onClick={(e) => { e.stopPropagation(); exportTripToPdf(trip); }}
               title="Exportar para PDF / Imprimir"
-              className="p-2 rounded-lg border transition-colors cursor-pointer hover:text-emerald-400"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)', color: 'var(--text-muted)' }}
+              className="p-2 rounded-xl border transition-all duration-200 cursor-pointer text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-400/50 hover:scale-110 active:scale-95 shadow-sm"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)' }}
             >
               <FileText className="w-4 h-4" />
             </button>
@@ -186,8 +186,8 @@ export const TripCard: React.FC<TripCardProps> = ({
                 }
               }}
               title="Excluir Viagem"
-              className="p-2 rounded-lg border transition-colors cursor-pointer hover:text-rose-400"
-              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)', color: 'var(--text-muted)' }}
+              className="p-2 rounded-xl border transition-all duration-200 cursor-pointer text-slate-400 hover:text-rose-400 hover:bg-rose-500/20 hover:border-rose-400/50 hover:scale-110 active:scale-95 shadow-sm"
+              style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-secondary)' }}
             >
               <Trash2 className="w-4 h-4" />
             </button>

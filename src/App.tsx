@@ -5,6 +5,8 @@ import { TripList } from './components/TripList';
 import { TripCalendar } from './components/TripCalendar';
 import { TripFormModal } from './components/TripFormModal';
 import { TripDetailModal } from './components/TripDetailModal';
+import { ThemeModal, DEFAULT_THEME_SETTINGS } from './components/ThemeModal';
+import type { ThemeSettings } from './components/ThemeModal';
 import type { Trip, TripFormData } from './types/trip';
 import {
   subscribeTrips,
@@ -26,13 +28,53 @@ export function App() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedTripForDetail, setSelectedTripForDetail] = useState<Trip | null>(null);
 
+  // Estado da Personalização do Tema
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [themeSettings, setThemeSettings] = useState<ThemeSettings>(() => {
+    try {
+      const saved = localStorage.getItem('viajaThemeSettingsJSON');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return DEFAULT_THEME_SETTINGS;
+  });
+
+  // Aplica as configurações visuais ao HTML root e salva no localStorage
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (themeSettings.themeMode === 'light') {
+      root.setAttribute('data-theme', 'light');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+
+    root.setAttribute('data-accent', themeSettings.accentColor);
+    root.setAttribute('data-bg', themeSettings.bgGradient);
+    root.setAttribute('data-card', themeSettings.cardBg);
+    root.setAttribute('data-header', themeSettings.headerBg);
+
+    localStorage.setItem('viajaThemeSettingsJSON', JSON.stringify(themeSettings));
+  }, [themeSettings]);
+
+  const handleApplyThemeSettings = (newSettings: ThemeSettings) => {
+    setThemeSettings(newSettings);
+  };
+
+  const handleToggleThemeMode = () => {
+    setThemeSettings(prev => ({
+      ...prev,
+      themeMode: prev.themeMode === 'dark' ? 'light' : 'dark'
+    }));
+  };
+
   // Escuta a coleção 'trips' no Cloud Firestore em tempo real
   useEffect(() => {
     setIsLoading(true);
     const unsubscribe = subscribeTrips((fetchedTrips) => {
       setTrips(fetchedTrips);
       setIsLoading(false);
-      // Atualiza o modal de detalhes em tempo real
       if (selectedTripForDetail) {
         const updated = fetchedTrips.find(t => t.id === selectedTripForDetail.id);
         if (updated) setSelectedTripForDetail(updated);
@@ -40,17 +82,6 @@ export function App() {
     }, () => setIsLoading(false));
     return () => unsubscribe();
   }, [selectedTripForDetail?.id]);
-
-  // Aplica tema/accent/bg salvos no localStorage ao inicializar
-  useEffect(() => {
-    const theme = localStorage.getItem('viajaTheme') || 'dark';
-    const accent = localStorage.getItem('viajaAccent') || 'cyan';
-    const bgGradient = localStorage.getItem('viajaBgGradient') || 'gradient-default';
-    const root = document.documentElement;
-    if (theme === 'light') root.setAttribute('data-theme', 'light');
-    root.setAttribute('data-accent', accent);
-    root.setAttribute('data-bg', bgGradient);
-  }, []);
 
   // Salvar Viagem (Criar ou Editar)
   const handleSaveTrip = async (formData: TripFormData, editTripId?: string) => {
@@ -99,23 +130,26 @@ export function App() {
       className="min-h-screen flex flex-col font-sans"
       style={{
         backgroundColor: 'var(--bg-primary)',
-        color: 'var(--text-primary)',
-        // Smooth selection color
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        color: 'var(--text-primary)'
       }}
     >
       <Header
         activeView={activeView}
         setActiveView={setActiveView}
         onOpenCreateModal={handleOpenCreate}
+        onOpenThemeModal={() => setIsThemeModalOpen(true)}
         trips={trips}
+        themeSettings={themeSettings}
+        onToggleThemeMode={handleToggleThemeMode}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {isLoading ? (
           <div className="text-center py-20">
-            <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
-              style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+            <div
+              className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+              style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }}
+            />
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
               Carregando suas viagens...
             </p>
@@ -151,6 +185,13 @@ export function App() {
         onDelete={handleDeleteTrip}
         onAddExtraItem={handleAddExtraItem}
         onRemoveExtraItem={handleRemoveExtraItem}
+      />
+
+      <ThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        settings={themeSettings}
+        onApplySettings={handleApplyThemeSettings}
       />
 
       <footer
