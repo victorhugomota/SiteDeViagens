@@ -209,38 +209,62 @@ export const TripDetailModal: React.FC<TripDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Fotos da Hospedagem */}
-          {(trip.accommodation?.photos?.length || 0) > 0 && (
+          {/* Hospedagem (Fotos e Link da Reserva) */}
+          {(trip.accommodation?.name || trip.accommodation?.url || (trip.accommodation?.photos?.length || 0) > 0) && (
             <div className="rounded-2xl border p-4 space-y-3" style={sectionStyle}>
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-2" style={labelStyle}>
                   <Hotel className="w-4 h-4 text-indigo-400" /> {trip.accommodation?.name || 'Hospedagem'}
-                  <span className="text-[10px] text-slate-400 font-normal">(Clique na foto para ampliar)</span>
                 </h3>
-                {trip.accommodation?.url && (
-                  <a href={trip.accommodation.url} target="_blank" rel="noopener noreferrer"
-                    className="text-[11px] flex items-center gap-1 hover:underline" style={{ color: 'var(--accent)' }}>
-                    <ExternalLink className="w-3 h-3" /> Ver hospedagem ↗
-                  </a>
-                )}
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {trip.accommodation.photos!.map((photo, idx) => (
-                  <div
-                    key={idx}
-                    className="relative rounded-xl overflow-hidden h-28 cursor-pointer group shadow-md border hover:scale-[1.03] transition-all duration-200"
-                    style={{ borderColor: 'var(--border-primary)' }}
-                    onClick={() => setSelectedImageForLightbox(photo)}
-                    title="Clique para ampliar esta foto da hospedagem"
-                  >
-                    <img src={photo} alt={`Hospedagem ${idx + 1}`} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-bold gap-1">
-                      <span>🔍 Expandir</span>
-                      <span className="text-[9px] text-slate-200 font-normal">Foto {idx + 1} de {trip.accommodation!.photos!.length}</span>
+
+              {/* Região Clicável do Link da Hospedagem */}
+              {trip.accommodation?.url && (
+                <a
+                  href={trip.accommodation.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir link da hospedagem"
+                  className="rounded-xl border px-3.5 py-2.5 flex items-center justify-between transition-all duration-200 cursor-pointer group hover:border-cyan-400 hover:shadow-md active:scale-98"
+                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-primary)' }}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <ExternalLink className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-cyan-300 block group-hover:text-cyan-200 transition-colors">
+                        Ver Hospedagem ↗
+                      </span>
+                      <span className="text-[10px] block truncate text-slate-400 mt-0.5">
+                        {trip.accommodation.url}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <span className="text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2">
+                    Abrir ↗
+                  </span>
+                </a>
+              )}
+
+              {/* Grade de Fotos da Hospedagem */}
+              {(trip.accommodation?.photos?.length || 0) > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                  {trip.accommodation!.photos!.map((photo, idx) => (
+                    <div
+                      key={idx}
+                      className="relative rounded-xl overflow-hidden h-28 cursor-pointer group shadow-md border hover:scale-[1.03] transition-all duration-200"
+                      style={{ borderColor: 'var(--border-primary)' }}
+                      onClick={() => setSelectedImageForLightbox(photo)}
+                      title="Clique para ampliar esta foto da hospedagem"
+                    >
+                      <img src={photo} alt={`Hospedagem ${idx + 1}`} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs font-bold gap-1">
+                        <span>🔍 Expandir</span>
+                        <span className="text-[9px] text-slate-200 font-normal">Foto {idx + 1} de {trip.accommodation!.photos!.length}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
